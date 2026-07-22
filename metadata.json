@@ -1,0 +1,8 @@
+{
+  "name": "Dashboard Buenos Aires",
+  "description": "Dashboard financeiro compartilhado para planejamento da viagem a Buenos Aires.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
