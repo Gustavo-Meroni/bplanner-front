@@ -24,6 +24,8 @@ import {
   ReferenceLine
 } from 'recharts';
 
+import { motion, AnimatePresence } from 'motion/react';
+
 // --- HELPERS ---
 const generateId = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -877,29 +879,47 @@ export default function MainApp() {
             </p>
           </div>
 
-          {activeView === 'home' ? (
-            <DashboardHome 
-              state={state} 
-              totalEmCaixa={totalEmCaixa} 
-              onUpdateTripGoal={handleUpdateTripGoal}
-              activeMonth={activeMonth}
-            />
-          ) : (
-            <GestaoView 
-              state={state}
-              addAporte={handleAddAporte}
-              deleteAporte={handleDeleteAporte}
-              updateProfile={updateProfile}
-              updateCategoryName={updateCategoryName}
-              addCategory={addCategory}
-              deleteCategory={deleteCategory}
-              addItem={addItem}
-              updateItem={updateItem}
-              deleteItem={deleteItem}
-              activeMonth={activeMonth}
-              setActiveMonth={setActiveMonth}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            {activeView === 'home' ? (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <DashboardHome 
+                  state={state} 
+                  totalEmCaixa={totalEmCaixa} 
+                  onUpdateTripGoal={handleUpdateTripGoal}
+                  activeMonth={activeMonth}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="gestao"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <GestaoView 
+                  state={state}
+                  addAporte={handleAddAporte}
+                  deleteAporte={handleDeleteAporte}
+                  updateProfile={updateProfile}
+                  updateCategoryName={updateCategoryName}
+                  addCategory={addCategory}
+                  deleteCategory={deleteCategory}
+                  addItem={addItem}
+                  updateItem={updateItem}
+                  deleteItem={deleteItem}
+                  activeMonth={activeMonth}
+                  setActiveMonth={setActiveMonth}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </div>
