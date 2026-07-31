@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, PieChart, Target, X } from 'lucide-react';
+import { Home, PieChart, Target, X, LogOut } from 'lucide-react';
 import { useUIStore } from '@/shared/store/use-ui-store';
 import { useAuthStore } from '@/shared/store/use-auth-store';
 
@@ -14,11 +14,25 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { isMobileOpen, setMobileOpen } = useUIStore();
+
   const casal = useAuthStore((s) => s.casal);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
 
   const handleNav = (href: string) => {
     router.push(href);
     setMobileOpen(false);
+  };
+
+  const handleLogout = () => {
+    // 1. Limpa o estado global do Zustand / localStorage
+    clearAuth();
+
+    // 2. Remove o cookie lido pelo Middleware
+    document.cookie = 'bplanner-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+
+    // 3. Fecha o menu no mobile e redireciona para a tela de Login
+    setMobileOpen(false);
+    router.push('/login');
   };
 
   return (
@@ -33,9 +47,8 @@ export function Sidebar() {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-56 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64 ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 w-56 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full p-5">
           {/* Logo */}
@@ -65,11 +78,10 @@ export function Sidebar() {
                 <button
                   key={item.href}
                   onClick={() => handleNav(item.href)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${
-                    active
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${active
                       ? 'bg-[#2E6F40] text-white font-semibold shadow-sm border border-[#253D2C]/10'
                       : 'text-slate-500 hover:bg-[#CFFFDC]/50 hover:text-[#253D2C] font-medium'
-                  }`}
+                    }`}
                 >
                   <Icon
                     size={20}
@@ -83,13 +95,13 @@ export function Sidebar() {
           </nav>
 
           {/* Footer */}
-          <div className="mt-auto">
+          <div className="mt-auto space-y-3">
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-full bg-[#CFFFDC] flex items-center justify-center text-[#2E6F40] font-bold text-xs">
-                  {casal?.nome?.slice(0, 2).toUpperCase() ?? 'GR'}
+                <div className="w-8 h-8 rounded-full bg-[#CFFFDC] flex items-center justify-center text-[#2E6F40] font-bold text-xs flex-shrink-0">
+                  {casal?.nome?.slice(0, 2).toUpperCase() ?? 'BP'}
                 </div>
-                <div className="text-sm font-semibold text-[#253D2C]">
+                <div className="text-sm font-semibold text-[#253D2C] truncate">
                   {casal?.nome ?? 'Casal Planejador'}
                 </div>
               </div>
@@ -98,6 +110,15 @@ export function Sidebar() {
                 <span className="text-xs font-bold text-slate-500">STATUS: POUPANDO</span>
               </div>
             </div>
+
+            {/* Botão de Sair */}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-colors"
+            >
+              <LogOut size={18} />
+              Sair da Conta
+            </button>
           </div>
         </div>
       </aside>

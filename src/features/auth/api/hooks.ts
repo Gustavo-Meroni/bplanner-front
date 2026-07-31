@@ -14,7 +14,6 @@ const getErrorMessage = (error: any): string => {
   return message || 'Ocorreu um erro inesperado. Tente novamente.';
 };
 
-// Hook de Login
 export const useLoginMutation = () => {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -24,12 +23,15 @@ export const useLoginMutation = () => {
     onSuccess: (data) => {
       const { access_token, usuario } = data;
 
-      // Salva no Zustand / localStorage
+      // 1. Salva no Zustand / localStorage
       setAuth(
         access_token,
         { id: usuario.id, nome: usuario.nome, email: usuario.email },
         { id: usuario.casal.id, nome: usuario.casal.nome }
       );
+
+      // 2. Salva no Cookie (Para o Middleware do Next.js poder ler)
+      document.cookie = `bplanner-token=${access_token}; path=/; max-age=604800`; // Expira em 7 dias
 
       toast.success(`Bem-vindo(a) de volta, ${usuario.nome}!`);
       router.push('/dashboard');
