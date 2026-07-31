@@ -1,47 +1,48 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { aportesServices } from './services';
-import type { CreateAporteDto } from './types';
+import { getAportesService, createAporteService, deleteAporteService } from './services';
+import { CreateAporteDto } from './types';
 
-export const aportesKeys = {
-  all: ['aportes'] as const,
-  list: () => [...aportesKeys.all, 'list'] as const,
+export const APORTES_QUERY_KEY = ['aportes'];
+
+// Busca todos os aportes do casal
+export const useAportesQuery = () => {
+  return useQuery({
+    queryKey: APORTES_QUERY_KEY,
+    queryFn: getAportesService,
+  });
 };
 
-/**
- * ⚠️ All hooks are currently disabled (enabled: false).
- * The UI currently reads from useAppStore (Zustand local state).
- * Enable after NestJS API integration.
- */
+// Adiciona um novo aporte e invalida os caches de Aportes e Dashboard
+export const useCreateAporteMutation = () => {
+  const queryClient = useQueryClient();
 
-export function useAportesQuery() {
-  return useQuery({
-    queryKey: aportesKeys.list(),
-    queryFn: () => aportesServices.getAportes(),
-    enabled: false, // TODO: enable after API integration
-  });
-}
-
-export function useCreateAporteMutation() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreateAporteDto) => aportesServices.createAporte(dto),
+    mutationFn: (data: CreateAporteDto) => createAporteService(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: aportesKeys.all });
-      toast.success('Aporte adicionado ao cofre!');
+      toast.success('Aporte adicionado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: APORTES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
-    onError: () => toast.error('Erro ao adicionar aporte.'),
+    onError: () => {
+      toast.error('Erro ao cadastrar aporte. Verifique os dados.');
+    },
   });
-}
+};
 
-export function useDeleteAporteMutation() {
-  const qc = useQueryClient();
+// Remove um aporte e invalida os caches
+export const useDeleteAporteMutation = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (id: string) => aportesServices.deleteAporte(id),
+    mutationFn: (id: string) => deleteAporteService(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: aportesKeys.all });
-      toast.success('Aporte removido.');
+      toast.success('Aporte removido!');
+      queryClient.invalidateQueries({ queryKey: APORTES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
-    onError: () => toast.error('Erro ao remover aporte.'),
+    onError: () => {
+      toast.error('Erro ao excluir aporte.');
+    },
   });
-}
+};

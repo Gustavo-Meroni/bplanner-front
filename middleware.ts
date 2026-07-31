@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
     // 1. Pega o token de autenticação dos cookies
     const token = request.cookies.get('bplanner-token')?.value;
 
@@ -26,9 +26,11 @@ export function proxy(request: NextRequest) {
 // Configura em quais rotas esse middleware vai agir
 export const config = {
     matcher: [
+        '/dashboard',
         '/dashboard/:path*',
+        '/gestao',
         '/gestao/:path*',
         '/login',
-        '/registrar'
+        '/registrar',
     ],
 };
