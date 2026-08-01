@@ -2,12 +2,8 @@ export interface Aporte {
   id: string;
   descricao: string;
   valor: number;
-  mes: string; // <-- adicionado
-  createdAt?: string;
+  mes: string;
+  createdAt: string;
 }
 
-export interface CreateAporteDto {
-  descricao: string;
-  valor: number;
-  mes: string; // <-- adicionado
-}
+export type CreateAportePayload = Omit<Aporte, 'id' | 'createdAt'>;

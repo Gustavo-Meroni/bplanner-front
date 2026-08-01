@@ -1,5 +1,14 @@
+'use client';
+
 import { formatCurrency } from '@/shared/utils/format-currency';
-import type { RecentPayment } from '../api/types';
+
+// Interface ajustada para a necessidade do componente
+export interface RecentPayment {
+  id: string;
+  name: string;
+  value: number;
+  profileName: string;
+}
 
 interface RecentPaymentsProps {
   payments: RecentPayment[];

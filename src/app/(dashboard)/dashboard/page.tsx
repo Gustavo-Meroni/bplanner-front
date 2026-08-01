@@ -1,23 +1,38 @@
 'use client';
 
 import { motion, AnimatePresence } from 'motion/react';
-import { useAppStore } from '@/shared/store/use-app-store';
 import { useUIStore } from '@/shared/store/use-ui-store';
 import { SuperMetaCard } from '@/features/dashboard/components/SuperMetaCard';
 import { DespesasPanel } from '@/features/dashboard/components/DespesasPanel';
 import { BarChartWidget } from '@/features/dashboard/components/BarChartWidget';
 import { RecentPayments } from '@/features/dashboard/components/RecentPayments';
 import { TotalLazerCard } from '@/features/dashboard/components/TotalLazerCard';
-import { getMesAno, MESES_VIAGEM } from '@/shared/utils/format-date';
+import { MESES_VIAGEM } from '@/shared/utils/format-date';
+import { useDespesasQuery } from '@/features/despesas/api/hooks';
+import { useAportesQuery } from '@/features/aportes/api/hooks';
+import { useDashboardQuery, useUpdateMetaMutation } from '@/features/dashboard/api/hooks'; // <-- Novos imports!
+import { Loader2 } from 'lucide-react';
 import type { AporteChartPoint, RecentPayment } from '@/features/dashboard/api/types';
-import type { Aporte, Item } from '@/shared/store/use-app-store';
 
 export default function DashboardPage() {
-  const { tripGoal, aportes, profiles, updateTripGoal } = useAppStore();
   const { activeMonth } = useUIStore();
 
+  // 1. Buscas de dados reais do backend (TanStack Query)
+  const { data: resumo, isLoading: isLoadingResumo } = useDashboardQuery(activeMonth);
+  const { data: profiles = [], isLoading: isLoadingDespesas } = useDespesasQuery(activeMonth);
+  const { data: aportes = [], isLoading: isLoadingAportes } = useAportesQuery();
+
+  // 2. Hook para salvar a nova meta no banco
+  const { mutate: updateTripGoal } = useUpdateMetaMutation();
+
+  const isLoading = isLoadingDespesas || isLoadingAportes || isLoadingResumo;
+
+  // 3. Pega a meta do backend (com fallback para 0 caso ainda esteja carregando)
+  const tripGoal = resumo?.metaViagem || 0;
+
   // ── Compute metrics ──────────────────────────────────────────────────────────
-  const totalEmCaixa = aportes.reduce((acc, a: Aporte) => acc + a.valor, 0);
+
+  const totalEmCaixa = aportes.reduce((acc, a) => acc + a.valor, 0);
   const valorLazer = Math.max(totalEmCaixa - tripGoal, 0);
 
   let totalPagas = 0;
@@ -26,27 +41,31 @@ export default function DashboardPage() {
 
   profiles.forEach((p) =>
     p.categories.forEach((c) =>
-      c.items.forEach((i: Item) => {
+      c.items.forEach((i) => {
         const itemMes = i.mes ?? 'Ago/2026';
         if (itemMes === activeMonth) {
           totalDevido += i.value;
-          if (i.checked) totalPagas += i.value;
-        }
-        if (i.checked) {
-          recentPayments.push({ id: i.id, name: i.name, value: i.value, profileName: p.name });
+          if (i.checked) {
+            totalPagas += i.value;
+            recentPayments.push({
+              id: i.id,
+              name: i.name,
+              value: i.value,
+              profileName: p.name
+            });
+          }
         }
       })
     )
   );
 
   // ── Chart data ───────────────────────────────────────────────────────────────
+
   const chartData: AporteChartPoint[] = MESES_VIAGEM.map((mes) => {
     const sum = aportes
-      .filter((a: Aporte) => {
-        if (!a.data) return mes === 'Jul/2026';
-        return getMesAno(new Date(a.data)) === mes;
-      })
-      .reduce((s: number, a: Aporte) => s + a.valor, 0);
+      .filter((a) => a.mes === mes)
+      .reduce((s, a) => s + a.valor, 0);
+
     return { name: mes.split('/')[0], acumulado: sum };
   });
 
@@ -60,11 +79,18 @@ export default function DashboardPage() {
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight text-[#253D2C]">Visão Geral</h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">
-            Acompanhe o progresso da sua poupança e metas.
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#253D2C]">Visão Geral</h1>
+            <p className="text-sm text-slate-500 font-medium mt-1">
+              Acompanhe o progresso da sua poupança e metas.
+            </p>
+          </div>
+          {isLoading && (
+            <div className="flex items-center gap-2 text-sm text-slate-400 font-medium bg-slate-50 px-4 py-2 rounded-full">
+              <Loader2 size={16} className="animate-spin" /> Atualizando...
+            </div>
+          )}
         </div>
 
         <div className="max-w-6xl mx-auto space-y-6">
@@ -73,7 +99,7 @@ export default function DashboardPage() {
             <SuperMetaCard
               current={Math.min(totalEmCaixa, tripGoal)}
               goal={tripGoal}
-              onUpdateGoal={updateTripGoal}
+              onUpdateGoal={(novoValor) => updateTripGoal(novoValor)}
             />
             <DespesasPanel
               totalPagas={totalPagas}

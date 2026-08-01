@@ -1,16 +1,16 @@
 import api from '@/shared/api/client';
-import type { Aporte, CreateAporteDto } from './types';
+import type { Aporte, CreateAportePayload } from './types';
 
-export const getAportesService = async (): Promise<Aporte[]> => {
-  const response = await api.get<Aporte[]>('/aportes');
+export const getAportes = async (): Promise<Aporte[]> => {
+  const response = await api.get('/aportes');
   return response.data;
 };
 
-export const createAporteService = async (data: CreateAporteDto): Promise<Aporte> => {
-  const response = await api.post<Aporte>('/aportes', data);
+export const createAporte = async (data: CreateAportePayload): Promise<Aporte> => {
+  const response = await api.post('/aportes', data);
   return response.data;
 };
 
-export const deleteAporteService = async (id: string): Promise<void> => {
+export const deleteAporte = async (id: string): Promise<void> => {
   await api.delete(`/aportes/${id}`);
 };

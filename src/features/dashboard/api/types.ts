@@ -8,4 +8,17 @@ export interface DashboardResumo {
   totalDespesasVariaveis: number;
   saldo: number;
   balancoPositivo: boolean;
+  metaViagem: number;
+}
+
+export interface AporteChartPoint {
+  name: string;
+  acumulado: number;
+}
+
+export interface RecentPayment {
+  id: string;
+  name: string;
+  value: number;
+  profileName: string;
 }
