@@ -2,6 +2,7 @@
 
 import { Menu, Target } from 'lucide-react';
 import { useUIStore } from '@/shared/store/use-ui-store';
+import { ThemeToggle } from '@/shared/components/theme-toggle';
 
 export function MobileHeader() {
   const setMobileOpen = useUIStore((s) => s.setMobileOpen);
@@ -14,14 +15,17 @@ export function MobileHeader() {
         </div>
         <span className="font-bold text-foreground">BPlanner</span>
       </div>
-      <button
-        id="mobile-menu-btn"
-        className="p-2 text-muted-foreground hover:bg-muted rounded-lg"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Abrir menu"
-      >
-        <Menu size={24} />
-      </button>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <button
+          id="mobile-menu-btn"
+          className="p-2 text-muted-foreground hover:bg-muted rounded-lg"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Abrir menu"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
     </header>
   );
 }

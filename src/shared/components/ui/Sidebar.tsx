@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Home, PieChart, Target, X, LogOut } from 'lucide-react';
 import { useUIStore } from '@/shared/store/use-ui-store';
 import { useAuthStore } from '@/shared/store/use-auth-store';
+import { ThemeToggle } from '@/shared/components/theme-toggle';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -61,12 +62,17 @@ export function Sidebar() {
                 B<span className="text-primary">Planner</span>
               </h2>
             </div>
-            <button
-              className="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg"
-              onClick={() => setMobileOpen(false)}
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="hidden lg:block">
+                <ThemeToggle />
+              </div>
+              <button
+                className="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg"
+                onClick={() => setMobileOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Nav */}
