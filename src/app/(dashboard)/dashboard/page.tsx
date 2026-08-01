@@ -39,13 +39,20 @@ export default function DashboardPage() {
 
   const isGoalReached = tripGoal > 0 && totalEmCaixa >= tripGoal;
 
-  // 💡 Controle de Confetes
   const hasFiredConfetti = useRef(false);
 
-  // 🎉 Dispara os confetes apenas quando os dados estiverem carregados e for a primeira vez!
+  // 🎉 Dispara os confetes de forma inteligente usando a memória do navegador
   useEffect(() => {
-    if (isGoalReached && !hasFiredConfetti.current && !isLoading) {
+    if (isLoading || tripGoal === 0) return;
+
+    const celebratedGoal = localStorage.getItem('@bplanner:celebrated_goal');
+
+    // Se bateu a meta, E é diferente da última vez comemorada, E ainda não atirou nessa tela...
+    if (isGoalReached && celebratedGoal !== tripGoal.toString() && !hasFiredConfetti.current) {
       hasFiredConfetti.current = true;
+
+      // Salva imediatamente para que, se o usuário der F5 depois, não repita
+      localStorage.setItem('@bplanner:celebrated_goal', tripGoal.toString());
 
       const duration = 3 * 1000;
       const animationEnd = Date.now() + duration;
@@ -54,6 +61,8 @@ export default function DashboardPage() {
 
       const interval: any = setInterval(function () {
         const timeLeft = animationEnd - Date.now();
+
+        // 🚨 O SEGREDO ESTÁ AQUI: O intervalo se auto-destrói de forma segura.
         if (timeLeft <= 0) return clearInterval(interval);
 
         const particleCount = 50 * (timeLeft / duration);
@@ -63,12 +72,10 @@ export default function DashboardPage() {
         confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors }));
       }, 250);
 
-      return () => clearInterval(interval);
-    } else if (!isGoalReached && !isLoading) {
-      // Se a meta voltar a ficar incompleta, reseta o gatilho para a próxima vitória!
-      hasFiredConfetti.current = false;
+      // Não retornamos o clearInterval aqui embaixo. Assim o React Strict Mode 
+      // não cancela a nossa animação logo no primeiro milissegundo de montagem!
     }
-  }, [isGoalReached, isLoading]);
+  }, [isGoalReached, isLoading, tripGoal]);
 
   let totalPagas = 0;
   let totalDevido = 0;
