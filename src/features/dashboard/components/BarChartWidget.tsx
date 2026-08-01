@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { formatCurrency } from '@/shared/utils/format-currency';
+import { InfoTooltip } from '@/shared/components/ui/InfoTooltip';
 import type { AporteChartPoint } from '../api/types';
 
 interface BarChartWidgetProps {
@@ -21,12 +22,17 @@ interface BarChartWidgetProps {
 export function BarChartWidget({ metaViagem, data }: BarChartWidgetProps) {
   return (
     <div className="bg-card p-6 rounded-[2rem] shadow-sm border border-border/50 h-full flex flex-col min-h-[400px]">
-      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-6 flex-shrink-0">
-        Aportes Mensais
-      </h3>
+      <div className="flex items-center gap-1.5 mb-6 flex-shrink-0">
+        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          Aportes Mensais
+        </h3>
+        <InfoTooltip text="O histórico de quanto vocês conseguiram guardar juntos a cada mês." />
+      </div>
+
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <RechartsBarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          {/* 💡 Ajuste: margin top para 25 para a palavra "Meta" respirar */}
+          <RechartsBarChart data={data} margin={{ top: 25, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
             <XAxis
               dataKey="name"

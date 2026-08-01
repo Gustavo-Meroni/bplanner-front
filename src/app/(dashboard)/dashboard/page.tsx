@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import { useUIStore } from '@/shared/store/use-ui-store';
 import { SuperMetaCard } from '@/features/dashboard/components/SuperMetaCard';
 import { DespesasPanel } from '@/features/dashboard/components/DespesasPanel';
@@ -10,7 +12,7 @@ import { TotalLazerCard } from '@/features/dashboard/components/TotalLazerCard';
 import { MESES_VIAGEM } from '@/shared/utils/format-date';
 import { useDespesasQuery } from '@/features/despesas/api/hooks';
 import { useAportesQuery } from '@/features/aportes/api/hooks';
-import { useDashboardQuery, useUpdateMetaMutation } from '@/features/dashboard/api/hooks'; // <-- Novos imports!
+import { useDashboardQuery, useUpdateMetaMutation } from '@/features/dashboard/api/hooks';
 import { Loader2 } from 'lucide-react';
 import type { AporteChartPoint, RecentPayment } from '@/features/dashboard/api/types';
 
@@ -36,6 +38,37 @@ export default function DashboardPage() {
   const valorLazer = Math.max(totalEmCaixa - tripGoal, 0);
 
   const isGoalReached = tripGoal > 0 && totalEmCaixa >= tripGoal;
+
+  // 💡 Controle de Confetes
+  const hasFiredConfetti = useRef(false);
+
+  // 🎉 Dispara os confetes apenas quando os dados estiverem carregados e for a primeira vez!
+  useEffect(() => {
+    if (isGoalReached && !hasFiredConfetti.current && !isLoading) {
+      hasFiredConfetti.current = true;
+
+      const duration = 3 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval: any = setInterval(function () {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+
+        const particleCount = 50 * (timeLeft / duration);
+        const colors = ['#C9A84C', '#22D3EE', '#FAFAFA'];
+
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors }));
+      }, 250);
+
+      return () => clearInterval(interval);
+    } else if (!isGoalReached && !isLoading) {
+      // Se a meta voltar a ficar incompleta, reseta o gatilho para a próxima vitória!
+      hasFiredConfetti.current = false;
+    }
+  }, [isGoalReached, isLoading]);
 
   let totalPagas = 0;
   let totalDevido = 0;
@@ -98,11 +131,17 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Top row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SuperMetaCard
-              current={Math.min(totalEmCaixa, tripGoal)}
-              goal={tripGoal}
-              onUpdateGoal={(novoValor) => updateTripGoal(novoValor)}
-            />
+            {isGoalReached ? (
+              <TotalLazerCard valor={valorLazer} isGoalReached={isGoalReached} variant="featured" />
+            ) : (
+              <SuperMetaCard
+                current={Math.min(totalEmCaixa, tripGoal)}
+                goal={tripGoal}
+                onUpdateGoal={(novoValor) => updateTripGoal(novoValor)}
+                variant="featured"
+              />
+            )}
+
             <DespesasPanel
               totalPagas={totalPagas}
               totalDevido={totalDevido}
@@ -114,7 +153,18 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Left column — 25% */}
             <div className="lg:col-span-1 flex flex-col gap-6">
-              <TotalLazerCard valor={valorLazer} isGoalReached={isGoalReached} />
+
+              {isGoalReached ? (
+                <SuperMetaCard
+                  current={Math.min(totalEmCaixa, tripGoal)}
+                  goal={tripGoal}
+                  onUpdateGoal={(novoValor) => updateTripGoal(novoValor)}
+                  variant="compact"
+                />
+              ) : (
+                <TotalLazerCard valor={valorLazer} isGoalReached={isGoalReached} variant="compact" />
+              )}
+
               <RecentPayments payments={recentPayments.slice().reverse()} />
             </div>
 
