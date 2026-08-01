@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Check, Edit2, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, Edit2, X, Award } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { formatCurrency } from '@/shared/utils/format-currency';
 import { Input } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
@@ -18,15 +19,50 @@ export function SuperMetaCard({ current, goal, onUpdateGoal }: SuperMetaCardProp
 
   const percentage = goal > 0 ? Math.min((current / goal) * 100, 100) : 100;
   const remaining = Math.max(goal - current, 0);
+  const isGoalReached = percentage === 100 && goal > 0;
+
+  // 🎉 Efeito de Confetes quando atinge 100%
+  useEffect(() => {
+    if (isGoalReached) {
+      const duration = 3 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval: any = setInterval(function () {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        const colors = ['#C9A84C', '#22D3EE', '#FAFAFA']; // Nossas cores: Dourado, Ciano e Off-White
+
+        // Dispara dos dois lados da tela
+        confetti(Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors
+        }));
+        confetti(Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors
+        }));
+      }, 250);
+
+      return () => clearInterval(interval);
+    }
+  }, [isGoalReached]);
 
   const handleSave = () => {
     const val = Number(editValue);
-    // Garante que é um número válido e não é negativo!
     if (!isNaN(val) && val >= 0) {
       onUpdateGoal(val);
       setIsEditing(false);
     } else {
-      // Se tentar salvar um valor negativo, reseta para o valor original
       setEditValue(goal.toString());
     }
   };
@@ -37,13 +73,13 @@ export function SuperMetaCard({ current, goal, onUpdateGoal }: SuperMetaCardProp
   };
 
   return (
-    <div className="bg-card p-6 sm:p-8 rounded-[2rem] shadow-sm border border-border/50 flex flex-col justify-between h-full transition-shadow hover:shadow-md min-h-[160px]">
+    <div className={`bg-card p-6 sm:p-8 rounded-[2rem] shadow-sm border flex flex-col justify-between h-full transition-shadow hover:shadow-md min-h-[160px] ${isGoalReached ? 'border-primary/50 bg-primary/5' : 'border-border/50'
+      }`}>
       <div>
         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
           Meta da Viagem (Essencial)
         </span>
 
-        {/* Container da Meta (Modo Leitura vs Edição) */}
         <div className="mt-2 min-h-[48px] flex items-center">
           {isEditing ? (
             <div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-left-2 duration-300">
@@ -72,8 +108,11 @@ export function SuperMetaCard({ current, goal, onUpdateGoal }: SuperMetaCardProp
             </div>
           ) : (
             <div className="group flex items-center gap-3">
-              <span className="text-4xl font-black tracking-tight text-primary">
+              <span className="text-4xl font-black tracking-tight text-primary flex items-center gap-3">
                 {formatCurrency(goal)}
+                {isGoalReached && (
+                  <Award size={32} className="text-primary animate-pulse" />
+                )}
               </span>
               <button
                 onClick={() => setIsEditing(true)}
@@ -93,11 +132,17 @@ export function SuperMetaCard({ current, goal, onUpdateGoal }: SuperMetaCardProp
             className="h-full bg-primary rounded-full transition-all duration-700 ease-out relative"
             style={{ width: `${percentage}%` }}
           >
-            <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/30 rounded-full blur-[2px]" />
+            {!isGoalReached && (
+              <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/30 rounded-full blur-[2px]" />
+            )}
           </div>
         </div>
         <div className="text-xs font-medium text-muted-foreground">
-          Faltam <span className="font-semibold text-foreground">{formatCurrency(remaining)}</span> para atingir a meta
+          {isGoalReached ? (
+            <span className="font-bold text-primary">🎉 Meta atingida com sucesso! Preparando as malas!</span>
+          ) : (
+            <>Faltam <span className="font-semibold text-foreground">{formatCurrency(remaining)}</span> para atingir a meta</>
+          )}
         </div>
       </div>
     </div>

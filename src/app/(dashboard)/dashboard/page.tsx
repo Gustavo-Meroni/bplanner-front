@@ -35,6 +35,8 @@ export default function DashboardPage() {
   const totalEmCaixa = aportes.reduce((acc, a) => acc + a.valor, 0);
   const valorLazer = Math.max(totalEmCaixa - tripGoal, 0);
 
+  const isGoalReached = tripGoal > 0 && totalEmCaixa >= tripGoal;
+
   let totalPagas = 0;
   let totalDevido = 0;
   const recentPayments: RecentPayment[] = [];
@@ -112,7 +114,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Left column — 25% */}
             <div className="lg:col-span-1 flex flex-col gap-6">
-              <TotalLazerCard valor={valorLazer} />
+              <TotalLazerCard valor={valorLazer} isGoalReached={isGoalReached} />
               <RecentPayments payments={recentPayments.slice().reverse()} />
             </div>
 
