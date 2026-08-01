@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#f4fcf6] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Brand Header */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2.5 bg-gradient-to-br from-[#253D2C] to-[#2E6F40] rounded-xl shadow-md text-white">
+        <div className="p-2.5 bg-gradient-to-br from-primary to-primary/70 rounded-xl shadow-md text-primary-foreground">
           <Target size={24} strokeWidth={2.5} />
         </div>
-        <h1 className="text-2xl font-bold text-[#253D2C]">
-          B<span className="text-[#2E6F40]">Planner</span>
+        <h1 className="text-2xl font-bold text-foreground">
+          B<span className="text-primary">Planner</span>
         </h1>
       </div>
       <FormLogin />

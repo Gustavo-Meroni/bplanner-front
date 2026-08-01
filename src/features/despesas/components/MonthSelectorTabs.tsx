@@ -26,8 +26,8 @@ export const MonthSelectorTabs: React.FC<MonthSelectorTabsProps> = ({
             key={mes}
             onClick={() => onSelectMonth(mes)}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive
-                ? 'bg-[#2E6F40] text-white shadow-sm'
-                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'bg-card text-muted-foreground hover:bg-muted border border-border'
               }`}
           >
             {mes}

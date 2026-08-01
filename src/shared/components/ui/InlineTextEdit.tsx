@@ -53,21 +53,21 @@ export function InlineTextEdit({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="flex-1 min-w-0 px-1 py-0 border-b-2 border-[#2E6F40] bg-white outline-none text-[#253D2C] font-medium"
+        className="flex-1 min-w-0 px-1 py-0 border-b-2 border-primary bg-transparent outline-none text-foreground font-medium"
       />
     );
   }
 
   return (
     <div
-      className={`cursor-pointer hover:bg-slate-100 px-1 py-0.5 rounded-md transition-colors truncate ${className}`}
+      className={`cursor-pointer hover:bg-primary/10 px-1 py-0.5 rounded-md transition-colors truncate ${className}`}
       onClick={() => {
         setTempValue(value);
         setIsEditing(true);
       }}
       title="Clique para editar"
     >
-      {value || <span className="text-slate-400 italic">{placeholder}</span>}
+      {value || <span className="text-muted-foreground italic">{placeholder}</span>}
     </div>
   );
 }

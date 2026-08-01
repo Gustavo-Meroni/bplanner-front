@@ -25,14 +25,14 @@ export function ExpenseItemRow({
   const isChecked = item.checked;
 
   return (
-    <div className="flex items-center px-4 sm:px-5 py-3.5 gap-3 group/item transition-colors hover:bg-slate-50/50">
+    <div className="flex items-center px-4 sm:px-5 py-3.5 gap-3 group/item transition-colors hover:bg-muted/50">
       {/* Checkbox */}
       <button
         onClick={onToggle}
         className={`w-6 h-6 rounded-md flex-shrink-0 border-2 flex items-center justify-center transition-all duration-200 ${
           isChecked
-            ? 'bg-[#2E6F40] border-[#2E6F40] text-white shadow-sm'
-            : 'border-slate-300 text-transparent hover:border-[#68BA7F] bg-white'
+            ? 'bg-secondary border-secondary text-secondary-foreground shadow-sm'
+            : 'border-border text-transparent hover:border-primary bg-card'
         }`}
         aria-label={isChecked ? 'Desmarcar como pago' : 'Marcar como pago'}
       >
@@ -45,7 +45,7 @@ export function ExpenseItemRow({
           value={item.name}
           onSave={onUpdateName}
           className={`flex-1 text-sm sm:text-base font-medium ${
-            isChecked ? 'text-slate-400 line-through' : 'text-[#253D2C]'
+            isChecked ? 'text-muted-foreground line-through' : 'text-foreground'
           }`}
         />
       </div>
@@ -56,12 +56,12 @@ export function ExpenseItemRow({
           value={item.value}
           onSave={onUpdateValue}
           className={`text-sm sm:text-base font-bold ${
-            isChecked ? 'text-slate-400' : 'text-[#253D2C]'
+            isChecked ? 'text-muted-foreground' : 'text-foreground'
           }`}
         />
         <button
           onClick={onDelete}
-          className="p-1.5 sm:p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors sm:opacity-0 group-hover/item:opacity-100"
+          className="p-1.5 sm:p-2 text-muted-foreground/50 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors sm:opacity-0 group-hover/item:opacity-100"
           aria-label="Excluir item"
         >
           <Trash2 size={16} />

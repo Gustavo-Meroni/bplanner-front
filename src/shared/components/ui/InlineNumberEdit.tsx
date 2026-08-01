@@ -42,7 +42,7 @@ export function InlineNumberEdit({ value, onSave, className = '' }: InlineNumber
   if (isEditing) {
     return (
       <div className="flex items-center space-x-1">
-        <span className="text-slate-400 text-sm font-normal">R$</span>
+        <span className="text-muted-foreground text-sm font-normal">R$</span>
         <input
           ref={inputRef}
           type="number"
@@ -51,7 +51,7 @@ export function InlineNumberEdit({ value, onSave, className = '' }: InlineNumber
           onChange={(e) => setTempValue(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="w-24 px-1 py-0 border-b-2 border-[#2E6F40] bg-white outline-none text-[#253D2C] font-medium"
+          className="w-24 px-1 py-0 border-b-2 border-primary bg-transparent outline-none text-foreground font-medium"
         />
       </div>
     );
@@ -59,7 +59,7 @@ export function InlineNumberEdit({ value, onSave, className = '' }: InlineNumber
 
   return (
     <div
-      className={`cursor-pointer hover:bg-slate-100 px-1.5 py-0.5 rounded-md transition-colors ${className}`}
+      className={`cursor-pointer hover:bg-primary/10 px-1.5 py-0.5 rounded-md transition-colors ${className}`}
       onClick={() => {
         setTempValue(value.toString());
         setIsEditing(true);

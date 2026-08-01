@@ -81,13 +81,13 @@ export default function DashboardPage() {
         {/* Page Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#253D2C]">Visão Geral</h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Visão Geral</h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1">
               Acompanhe o progresso da sua poupança e metas.
             </p>
           </div>
           {isLoading && (
-            <div className="flex items-center gap-2 text-sm text-slate-400 font-medium bg-slate-50 px-4 py-2 rounded-full">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium bg-muted px-4 py-2 rounded-full">
               <Loader2 size={16} className="animate-spin" /> Atualizando...
             </div>
           )}

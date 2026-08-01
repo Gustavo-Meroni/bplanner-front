@@ -55,20 +55,20 @@ export const FormRegister = () => {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-6">
+    <div className="w-full max-w-md p-8 bg-card rounded-3xl border border-border shadow-sm space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold text-[#253D2C]">Criar Conta no BPlanner</h1>
-        <p className="text-sm text-slate-500">Configure seu espaço financeiro em casal</p>
+        <h1 className="text-2xl font-bold text-foreground">Criar Conta no BPlanner</h1>
+        <p className="text-sm text-muted-foreground">Configure seu espaço financeiro em casal</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-[#253D2C] uppercase mb-1">Seu Nome</label>
+          <label className="block text-xs font-bold text-foreground uppercase mb-1">Seu Nome</label>
           <input
             type="text"
             placeholder="Ex: Gustavo"
             {...register('nome')}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#2E6F40] focus:bg-white text-sm text-[#253D2C]"
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-primary focus:bg-card text-sm text-foreground placeholder:text-muted-foreground"
           />
           {errors.nome && (
             <span className="text-xs text-red-500 mt-1 block">{errors.nome.message}</span>
@@ -76,12 +76,12 @@ export const FormRegister = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#253D2C] uppercase mb-1">Email</label>
+          <label className="block text-xs font-bold text-foreground uppercase mb-1">Email</label>
           <input
             type="email"
             placeholder="seu@email.com"
             {...register('email')}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#2E6F40] focus:bg-white text-sm text-[#253D2C]"
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-primary focus:bg-card text-sm text-foreground placeholder:text-muted-foreground"
           />
           {errors.email && (
             <span className="text-xs text-red-500 mt-1 block">{errors.email.message}</span>
@@ -89,12 +89,12 @@ export const FormRegister = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#253D2C] uppercase mb-1">Senha</label>
+          <label className="block text-xs font-bold text-foreground uppercase mb-1">Senha</label>
           <input
             type="password"
             placeholder="••••••••"
             {...register('senha')}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#2E6F40] focus:bg-white text-sm text-[#253D2C]"
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-primary focus:bg-card text-sm text-foreground placeholder:text-muted-foreground"
           />
           {errors.senha && (
             <span className="text-xs text-red-500 mt-1 block">{errors.senha.message}</span>
@@ -103,8 +103,8 @@ export const FormRegister = () => {
 
         {/* Seleção entre Criar Novo ou Entrar via Código */}
         <div className="pt-2">
-          <label className="block text-xs font-bold text-[#253D2C] uppercase mb-2">Espaço Financeiro</label>
-          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+          <label className="block text-xs font-bold text-foreground uppercase mb-2">Espaço Financeiro</label>
+          <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-xl">
             <button
               type="button"
               onClick={() => {
@@ -112,8 +112,8 @@ export const FormRegister = () => {
                 setValue('codigoConvite', '');
               }}
               className={`py-2 text-xs font-bold rounded-lg transition-all ${opcaoConvite === 'criar'
-                  ? 'bg-white text-[#253D2C] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
                 }`}
             >
               Criar Novo Grupo
@@ -122,8 +122,8 @@ export const FormRegister = () => {
               type="button"
               onClick={() => setOpcaoConvite('entrar')}
               className={`py-2 text-xs font-bold rounded-lg transition-all ${opcaoConvite === 'entrar'
-                  ? 'bg-white text-[#2E6F40] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-card text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
                 }`}
             >
               Tenho um Código
@@ -134,7 +134,7 @@ export const FormRegister = () => {
         {/* Input de Código com Preview do Grupo */}
         {opcaoConvite === 'entrar' && (
           <div className="space-y-2 animate-in fade-in duration-300">
-            <label className="block text-xs font-bold text-[#253D2C] uppercase mb-1">
+            <label className="block text-xs font-bold text-foreground uppercase mb-1">
               Código de Convite do Parceiro
             </label>
             <input
@@ -142,16 +142,16 @@ export const FormRegister = () => {
               maxLength={6}
               placeholder="Ex: XY7A92"
               {...register('codigoConvite')}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#2E6F40] focus:bg-white text-sm font-mono tracking-widest text-[#253D2C] uppercase"
+              className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-primary focus:bg-card text-sm font-mono tracking-widest text-foreground uppercase placeholder:text-muted-foreground"
             />
 
             {/* Status da Busca do Código */}
             {isValidandoConvite && (
-              <p className="text-xs text-slate-400 italic">Buscando grupo do parceiro...</p>
+              <p className="text-xs text-muted-foreground italic">Buscando grupo do parceiro...</p>
             )}
 
             {grupoEncontrado && (
-              <div className="p-3 bg-[#CFFFDC]/40 border border-[#68BA7F]/40 rounded-xl text-xs text-[#253D2C] font-semibold flex items-center gap-2">
+              <div className="p-3 bg-secondary/15 border border-secondary/30 rounded-xl text-xs text-foreground font-semibold flex items-center gap-2">
                 <span>🔒</span>
                 <span>Entrando em: <strong>{grupoEncontrado.nome}</strong></span>
               </div>
@@ -168,15 +168,15 @@ export const FormRegister = () => {
         <button
           type="submit"
           disabled={isPending || (opcaoConvite === 'entrar' && !grupoEncontrado)}
-          className="w-full py-3.5 bg-[#2E6F40] hover:bg-[#253D2C] text-white font-bold rounded-xl shadow-md transition-colors disabled:opacity-50 text-sm mt-4"
+          className="w-full py-3.5 bg-primary hover:bg-primary/80 text-primary-foreground font-bold rounded-xl shadow-md transition-colors disabled:opacity-50 text-sm mt-4"
         >
           {isPending ? 'Criando conta...' : 'Concluir Cadastro'}
         </button>
       </form>
 
-      <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
+      <div className="text-center text-xs text-muted-foreground pt-2 border-t border-border">
         Já possui uma conta?{' '}
-        <Link href="/login" className="font-bold text-[#2E6F40] hover:underline">
+        <Link href="/login" className="font-bold text-primary hover:underline">
           Faça login
         </Link>
       </div>

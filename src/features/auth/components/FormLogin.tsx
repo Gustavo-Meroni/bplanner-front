@@ -30,20 +30,20 @@ export const FormLogin = () => {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-6">
+    <div className="w-full max-w-md p-8 bg-card rounded-3xl border border-border shadow-sm space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold text-[#253D2C]">Entrar no BPlanner</h1>
-        <p className="text-sm text-slate-500">Gerencie as finanças do casal em sintonia</p>
+        <h1 className="text-2xl font-bold text-foreground">Entrar no BPlanner</h1>
+        <p className="text-sm text-muted-foreground">Gerencie as finanças do casal em sintonia</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-[#253D2C] uppercase mb-1">Email</label>
+          <label className="block text-xs font-bold text-foreground uppercase mb-1">Email</label>
           <input
             type="email"
             placeholder="seu@email.com"
             {...register('email')}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#2E6F40] focus:bg-white text-sm text-[#253D2C] transition-colors"
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-primary focus:bg-card text-sm text-foreground transition-colors placeholder:text-muted-foreground"
           />
           {errors.email && (
             <span className="text-xs text-red-500 mt-1 block">{errors.email.message}</span>
@@ -51,12 +51,12 @@ export const FormLogin = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#253D2C] uppercase mb-1">Senha</label>
+          <label className="block text-xs font-bold text-foreground uppercase mb-1">Senha</label>
           <input
             type="password"
             placeholder="••••••••"
             {...register('senha')}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#2E6F40] focus:bg-white text-sm text-[#253D2C] transition-colors"
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none focus:border-primary focus:bg-card text-sm text-foreground transition-colors placeholder:text-muted-foreground"
           />
           {errors.senha && (
             <span className="text-xs text-red-500 mt-1 block">{errors.senha.message}</span>
@@ -66,15 +66,15 @@ export const FormLogin = () => {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-3.5 bg-[#2E6F40] hover:bg-[#253D2C] text-white font-bold rounded-xl shadow-md transition-colors disabled:opacity-50 text-sm mt-2"
+          className="w-full py-3.5 bg-primary hover:bg-primary/80 text-primary-foreground font-bold rounded-xl shadow-md transition-colors disabled:opacity-50 text-sm mt-2"
         >
           {isPending ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
 
-      <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
+      <div className="text-center text-xs text-muted-foreground pt-2 border-t border-border">
         Ainda não tem um espaço financeiro?{' '}
-        <Link href="/registrar" className="font-bold text-[#2E6F40] hover:underline">
+        <Link href="/registrar" className="font-bold text-primary hover:underline">
           Cadastre-se aqui
         </Link>
       </div>

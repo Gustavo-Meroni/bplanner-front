@@ -5,7 +5,7 @@ import { MobileHeader } from '@/shared/components/ui/MobileHeader';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-[#f4fcf6] font-sans text-[#253D2C] overflow-hidden selection:bg-[#CFFFDC]">
+    <div className="flex h-screen bg-background font-sans text-foreground overflow-hidden selection:bg-primary/20">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <MobileHeader />

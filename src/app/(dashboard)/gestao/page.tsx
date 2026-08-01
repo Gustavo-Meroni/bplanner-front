@@ -24,11 +24,11 @@ export default function GestaoPage() {
 
       {/* Cartões dos Perfis (Gustavo / Rafa) */}
       {isLoading ? (
-        <div className="text-center p-12 text-slate-400 font-medium">
+        <div className="text-center p-12 text-muted-foreground font-medium">
           Carregando planejamento de {activeMonth}...
         </div>
       ) : profiles.length === 0 ? (
-        <div className="text-center p-12 bg-white rounded-3xl border border-slate-200 text-slate-400">
+        <div className="text-center p-12 bg-card rounded-3xl border border-border text-muted-foreground">
           Nenhum perfil de planejamento encontrado.
         </div>
       ) : (
