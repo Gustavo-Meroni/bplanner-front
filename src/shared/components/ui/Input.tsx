@@ -36,10 +36,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full px-3 py-2.5 bg-card border rounded-xl outline-none text-sm text-foreground transition-colors placeholder:text-muted-foreground',
+              'w-full px-4 py-3 bg-card border rounded-xl outline-none text-sm text-foreground transition-all placeholder:text-muted-foreground',
               leftAddon ? 'pl-8' : '',
               error
-                ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+                ? 'border-destructive focus:border-destructive focus:ring-2 focus:ring-destructive/20' // <-- Trocado de red para destructive
                 : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/10',
               className
             )}
@@ -47,7 +47,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <span className="text-xs font-medium text-red-500">{error}</span>
+          <span className="text-xs font-medium text-destructive">{error}</span> // <-- Trocado de red para destructive
         )}
       </div>
     );

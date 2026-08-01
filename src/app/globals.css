@@ -53,6 +53,15 @@
     /* #C9A84C */
     --accent-foreground: 0 0% 5%;
 
+    /* Adicione no :root (Light) e no .dark (Dark) do seu global.css */
+    --destructive: 0 84% 60%;
+    /* Vermelho elegante */
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 142 71% 45%;
+    /* Verde esmeralda para checks */
+    --success-foreground: 0 0% 98%;
+
     --muted: 0 0% 92%;
     /* Cinza suave para superfícies neutras */
     --muted-foreground: 0 0% 45%;
@@ -87,6 +96,15 @@
     --accent: 44 54% 54%;
     /* #C9A84C */
     --accent-foreground: 0 0% 5%;
+
+    /* Adicione no :root (Light) e no .dark (Dark) do seu global.css */
+    --destructive: 0 84% 60%;
+    /* Vermelho elegante */
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 142 71% 45%;
+    /* Verde esmeralda para checks */
+    --success-foreground: 0 0% 98%;
 
     --muted: 0 0% 14%;
     /* Grafite sutil */

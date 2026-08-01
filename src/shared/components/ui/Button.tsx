@@ -18,11 +18,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-primary-foreground hover:bg-primary/80 active:bg-primary/70 shadow-sm',
+    'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 shadow-sm',
   ghost:
     'text-muted-foreground hover:bg-primary/10 hover:text-primary',
   danger:
-    'text-red-500 hover:bg-red-50 hover:text-red-600',
+    'text-destructive hover:bg-destructive/10 hover:text-destructive',
   outline:
     'border border-border text-foreground hover:bg-muted bg-card',
 };
