@@ -1,67 +1,116 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { despesasServices } from './services';
-import type { CreateDespesaDto, UpdateDespesaDto } from './types';
+import {
+  getDespesasService,
+  createDespesaService,
+  updateDespesaService,
+  deleteDespesaService,
+  toggleDespesaService,
+  createCategoriaService,
+  deleteCategoriaService,
+} from './services';
+import { CreateDespesaDto, UpdateDespesaDto, CreateCategoriaDto } from './types';
 
-export const despesasKeys = {
-  all: ['despesas'] as const,
-  profiles: () => [...despesasKeys.all, 'profiles'] as const,
-  list: (mes: string) => [...despesasKeys.all, 'list', mes] as const,
+export const DESPESAS_QUERY_KEY = ['despesas'];
+
+// Hook para buscar os gastos do mês ativo
+export const useDespesasQuery = (mes: string) => {
+  return useQuery({
+    queryKey: [...DESPESAS_QUERY_KEY, mes],
+    queryFn: () => getDespesasService(mes),
+    enabled: Boolean(mes),
+  });
 };
 
-/**
- * ⚠️ All hooks are currently disabled (enabled: false).
- * They will be activated once the NestJS API is integrated.
- * The UI currently reads from useAppStore (Zustand local state).
- */
+// Hook para criar item de despesa
+export const useCreateDespesaMutation = () => {
+  const queryClient = useQueryClient();
 
-export function useDespesasQuery(mes: string) {
-  return useQuery({
-    queryKey: despesasKeys.list(mes),
-    queryFn: () => despesasServices.getDespesas(mes),
-    enabled: false, // TODO: enable after API integration
-  });
-}
-
-export function useCreateDespesaMutation() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreateDespesaDto) => despesasServices.createDespesa(dto),
+    mutationFn: (data: CreateDespesaDto) => createDespesaService(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: despesasKeys.all });
       toast.success('Despesa adicionada!');
+      queryClient.invalidateQueries({ queryKey: DESPESAS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
-    onError: () => toast.error('Erro ao adicionar despesa.'),
+    onError: () => {
+      toast.error('Erro ao adicionar despesa.');
+    },
   });
-}
+};
 
-export function useUpdateDespesaMutation() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateDespesaDto }) =>
-      despesasServices.updateDespesa(id, dto),
-    onSuccess: () => qc.invalidateQueries({ queryKey: despesasKeys.all }),
-    onError: () => toast.error('Erro ao atualizar despesa.'),
-  });
-}
+// Hook para atualizar item (nome/valor)
+export const useUpdateDespesaMutation = () => {
+  const queryClient = useQueryClient();
 
-export function useDeleteDespesaMutation() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => despesasServices.deleteDespesa(id),
+    mutationFn: ({ id, data }: { id: string; data: UpdateDespesaDto }) =>
+      updateDespesaService(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: despesasKeys.all });
-      toast.success('Despesa removida.');
+      queryClient.invalidateQueries({ queryKey: DESPESAS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
-    onError: () => toast.error('Erro ao remover despesa.'),
+    onError: () => {
+      toast.error('Erro ao atualizar despesa.');
+    },
   });
-}
+};
 
-export function useTogglePayDespesaMutation() {
-  const qc = useQueryClient();
+// Hook para alternar o pago (Checkbox)
+export const useToggleDespesaMutation = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (id: string) => despesasServices.togglePaga(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: despesasKeys.all }),
-    onError: () => toast.error('Erro ao atualizar pagamento.'),
+    mutationFn: ({ id, checked }: { id: string; checked: boolean }) =>
+      toggleDespesaService(id, checked),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DESPESAS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: () => {
+      toast.error('Erro ao alterar status de pagamento.');
+    },
   });
-}
+};
+
+// Hook para deletar despesa
+export const useDeleteDespesaMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteDespesaService(id),
+    onSuccess: () => {
+      toast.success('Despesa removida!');
+      queryClient.invalidateQueries({ queryKey: DESPESAS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: () => {
+      toast.error('Erro ao remover despesa.');
+    },
+  });
+};
+
+// Hooks de Subcategoria
+export const useCreateCategoriaMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateCategoriaDto) => createCategoriaService(data),
+    onSuccess: () => {
+      toast.success('Subcategoria criada!');
+      queryClient.invalidateQueries({ queryKey: DESPESAS_QUERY_KEY });
+    },
+  });
+};
+
+export const useDeleteCategoriaMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteCategoriaService(id),
+    onSuccess: () => {
+      toast.success('Subcategoria removida!');
+      queryClient.invalidateQueries({ queryKey: DESPESAS_QUERY_KEY });
+    },
+  });
+};

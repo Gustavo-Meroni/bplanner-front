@@ -1,44 +1,44 @@
-import apiClient from '@/shared/api/client';
-import type {
-  Despesa,
-  DespesaProfile,
-  CreateDespesaDto,
-  UpdateDespesaDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-} from './types';
+import api from '@/shared/api/client';
+import { Profile, CreateDespesaDto, UpdateDespesaDto, ItemDespesa, CreateCategoriaDto } from './types';
 
-export const despesasServices = {
-  // ── Profiles ──
+// Busca a estrutura de perfis e categorias filtrada por mês
+export const getDespesasService = async (mes: string): Promise<Profile[]> => {
+  const response = await api.get<Profile[]>('/despesas', {
+    params: { mes },
+  });
+  return response.data;
+};
 
-  getProfiles: () =>
-    apiClient.get<DespesaProfile[]>('/despesas/profiles').then((r) => r.data),
+// Criar novo item de despesa
+export const createDespesaService = async (data: CreateDespesaDto): Promise<ItemDespesa> => {
+  const response = await api.post<ItemDespesa>('/despesas', data);
+  return response.data;
+};
 
-  // ── Despesas ──
+// Atualizar valor, nome ou status (checked) de uma despesa
+export const updateDespesaService = async (id: string, data: UpdateDespesaDto): Promise<ItemDespesa> => {
+  const response = await api.patch<ItemDespesa>(`/despesas/${id}`, data);
+  return response.data;
+};
 
-  getDespesas: (mes: string) =>
-    apiClient.get<Despesa[]>('/despesas', { params: { mes } }).then((r) => r.data),
+// Excluir despesa
+export const deleteDespesaService = async (id: string): Promise<void> => {
+  await api.delete(`/despesas/${id}`);
+};
 
-  createDespesa: (dto: CreateDespesaDto) =>
-    apiClient.post<Despesa>('/despesas', dto).then((r) => r.data),
+// Alternar status de pago (check/uncheck)
+export const toggleDespesaService = async (id: string, checked: boolean): Promise<ItemDespesa> => {
+  const response = await api.patch<ItemDespesa>(`/despesas/${id}/toggle`, { checked });
+  return response.data;
+};
 
-  updateDespesa: (id: string, dto: UpdateDespesaDto) =>
-    apiClient.patch<Despesa>(`/despesas/${id}`, dto).then((r) => r.data),
+// Criar nova subcategoria num perfil
+export const createCategoriaService = async (data: CreateCategoriaDto) => {
+  const response = await api.post('/despesas/categorias', data);
+  return response.data;
+};
 
-  deleteDespesa: (id: string) =>
-    apiClient.delete(`/despesas/${id}`),
-
-  togglePaga: (id: string) =>
-    apiClient.patch<Despesa>(`/despesas/${id}/toggle-paga`).then((r) => r.data),
-
-  // ── Categories ──
-
-  createCategory: (dto: CreateCategoryDto) =>
-    apiClient.post<{ id: string; nome: string }>('/despesas/categorias', dto).then((r) => r.data),
-
-  updateCategory: (id: string, dto: UpdateCategoryDto) =>
-    apiClient.patch(`/despesas/categorias/${id}`, dto),
-
-  deleteCategory: (id: string) =>
-    apiClient.delete(`/despesas/categorias/${id}`),
+// Excluir subcategoria
+export const deleteCategoriaService = async (id: string) => {
+  await api.delete(`/despesas/categorias/${id}`);
 };
