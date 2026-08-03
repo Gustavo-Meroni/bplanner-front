@@ -1,50 +1,41 @@
-// ─── Core Domain Types ────────────────────────────────────────────────────────
-
-export interface Despesa {
+export interface ItemDespesa {
   id: string;
-  nome: string;
-  valor: number;
-  isPaga: boolean;
-  /** Mês de referência, ex: "Ago/2026" */
+  name: string;
+  value: number;
+  checked: boolean;
   mes: string;
-  profileId: string;
-  categoryId: string;
+  categoryId?: string;
+  profileId?: string;
 }
 
-export interface DespesaCategory {
+export interface Category {
   id: string;
-  nome: string;
-  despesas: Despesa[];
+  name: string;
+  items: ItemDespesa[];
 }
 
-export interface DespesaProfile {
+export interface Profile {
   id: string;
-  nome: string;
-  teto: number;
-  categorias: DespesaCategory[];
+  name: string;
+  limit: number;
+  categories: Category[];
 }
-
-// ─── DTOs ─────────────────────────────────────────────────────────────────────
 
 export interface CreateDespesaDto {
-  nome: string;
-  valor: number;
+  name: string;
+  value: number;
   mes: string;
-  profileId: string;
   categoryId: string;
+  profileId: string;
 }
 
 export interface UpdateDespesaDto {
-  nome?: string;
-  valor?: number;
-  isPaga?: boolean;
+  name?: string;
+  value?: number;
+  checked?: boolean;
 }
 
-export interface CreateCategoryDto {
-  nome: string;
+export interface CreateCategoriaDto {
+  name: string;
   profileId: string;
-}
-
-export interface UpdateCategoryDto {
-  nome: string;
 }

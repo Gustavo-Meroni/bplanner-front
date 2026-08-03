@@ -35,18 +35,18 @@ export function CategoryGroup({
   );
 
   return (
-    <div className="bg-white border border-slate-200/60 rounded-3xl shadow-sm overflow-hidden group/cat">
+    <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden group/cat">
       {/* Category Header */}
-      <div className="bg-slate-50/40 px-5 py-4 flex items-center justify-between border-b border-slate-100">
+      <div className="bg-muted/40 px-5 py-4 flex items-center justify-between border-b border-border">
         <InlineTextEdit
           value={category.name}
           onSave={onUpdateName}
-          className="font-bold text-[#253D2C] text-sm sm:text-base -ml-1.5"
+          className="font-bold text-foreground text-sm sm:text-base -ml-1.5"
         />
         <div className="flex items-center gap-1 sm:opacity-0 group-hover/cat:opacity-100 transition-opacity">
           <button
             onClick={onAddItem}
-            className="p-2 text-[#2E6F40] hover:bg-[#CFFFDC] rounded-xl transition-colors"
+            className="p-2 text-primary hover:bg-primary/10 rounded-xl transition-colors"
             title="Adicionar Item"
             aria-label="Adicionar item à subcategoria"
           >
@@ -54,7 +54,7 @@ export function CategoryGroup({
           </button>
           <button
             onClick={onDeleteCategory}
-            className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors"
+            className="p-2 text-muted-foreground hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors"
             title="Excluir Subcategoria"
             aria-label="Excluir subcategoria"
           >
@@ -64,9 +64,9 @@ export function CategoryGroup({
       </div>
 
       {/* Items */}
-      <div className="divide-y divide-slate-50">
+      <div className="divide-y divide-border/50">
         {filteredItems.length === 0 ? (
-          <div className="p-6 text-center text-sm text-slate-400 italic">
+          <div className="p-6 text-center text-sm text-muted-foreground italic">
             Nenhum item adicionado nesta subcategoria para {activeMonth}.
           </div>
         ) : (

@@ -1,25 +1,23 @@
-import apiClient from '@/shared/api/client';
-import type { LoginDto, RegisterDto, AuthResponse, ConviteInfo } from './types';
+import api from '@/shared/api/client';
+import {
+  AuthResponse,
+  CreateUsuarioDto,
+  LoginDto,
+  UsuarioInfo,
+  ValidarConviteResponse,
+} from './types';
 
-export const authServices = {
-  /**
-   * POST /auth/login
-   * Autentica o usuário e retorna o token JWT.
-   */
-  login: (dto: LoginDto) =>
-    apiClient.post<AuthResponse>('/auth/login', dto).then((r) => r.data),
+export const loginService = async (data: LoginDto): Promise<AuthResponse> => {
+  const response = await api.post<AuthResponse>('/auth/login', data);
+  return response.data;
+};
 
-  /**
-   * POST /auth/register
-   * Cria novo usuário (opcionalmente vinculado a um casal via convite).
-   */
-  register: (dto: RegisterDto) =>
-    apiClient.post<AuthResponse>('/auth/register', dto).then((r) => r.data),
+export const registerService = async (data: CreateUsuarioDto): Promise<UsuarioInfo> => {
+  const response = await api.post<UsuarioInfo>('/auth/registrar', data);
+  return response.data;
+};
 
-  /**
-   * GET /auth/convite/:token
-   * Valida um token de convite e retorna informações do casal.
-   */
-  validarConvite: (token: string) =>
-    apiClient.get<ConviteInfo>(`/auth/convite/${token}`).then((r) => r.data),
+export const validarConviteService = async (codigo: string): Promise<ValidarConviteResponse> => {
+  const response = await api.get<ValidarConviteResponse>(`/auth/validar-convite/${codigo}`);
+  return response.data;
 };

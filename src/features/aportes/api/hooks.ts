@@ -1,47 +1,37 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { aportesServices } from './services';
-import type { CreateAporteDto } from './types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAportes, createAporte, deleteAporte } from './services';
+import type { CreateAportePayload } from './types';
 
-export const aportesKeys = {
-  all: ['aportes'] as const,
-  list: () => [...aportesKeys.all, 'list'] as const,
+export const APORTES_QUERY_KEY = ['aportes'];
+
+export const useAportesQuery = () => {
+  return useQuery({
+    queryKey: APORTES_QUERY_KEY,
+    queryFn: getAportes,
+  });
 };
 
-/**
- * ⚠️ All hooks are currently disabled (enabled: false).
- * The UI currently reads from useAppStore (Zustand local state).
- * Enable after NestJS API integration.
- */
+export const useCreateAporteMutation = () => {
+  const queryClient = useQueryClient();
 
-export function useAportesQuery() {
-  return useQuery({
-    queryKey: aportesKeys.list(),
-    queryFn: () => aportesServices.getAportes(),
-    enabled: false, // TODO: enable after API integration
-  });
-}
-
-export function useCreateAporteMutation() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreateAporteDto) => aportesServices.createAporte(dto),
+    mutationFn: (data: CreateAportePayload) => createAporte(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: aportesKeys.all });
-      toast.success('Aporte adicionado ao cofre!');
+      // Força a atualização da lista de aportes e do dashboard
+      queryClient.invalidateQueries({ queryKey: APORTES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
-    onError: () => toast.error('Erro ao adicionar aporte.'),
   });
-}
+};
 
-export function useDeleteAporteMutation() {
-  const qc = useQueryClient();
+export const useDeleteAporteMutation = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (id: string) => aportesServices.deleteAporte(id),
+    mutationFn: (id: string) => deleteAporte(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: aportesKeys.all });
-      toast.success('Aporte removido.');
+      queryClient.invalidateQueries({ queryKey: APORTES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
-    onError: () => toast.error('Erro ao remover aporte.'),
   });
-}
+};

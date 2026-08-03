@@ -32,14 +32,14 @@ export function ModalEditarNomeCasal({ currentNome, onClose }: ModalEditarNomeCa
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 w-full max-w-sm p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/30 backdrop-blur-sm">
+      <div className="bg-card rounded-[2rem] shadow-xl border border-border w-full max-w-sm p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-[#253D2C]">Editar Nome do Casal</h2>
+          <h2 className="text-lg font-bold text-foreground">Editar Nome do Casal</h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
             aria-label="Fechar modal"
           >
             <X size={18} />

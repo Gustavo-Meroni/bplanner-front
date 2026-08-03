@@ -1,25 +1,16 @@
-import apiClient from '@/shared/api/client';
-import type { Aporte, CreateAporteDto } from './types';
+import api from '@/shared/api/client';
+import type { Aporte, CreateAportePayload } from './types';
 
-export const aportesServices = {
-  /**
-   * GET /aportes
-   * Returns all trip contributions for the authenticated casal.
-   */
-  getAportes: () =>
-    apiClient.get<Aporte[]>('/aportes').then((r) => r.data),
+export const getAportes = async (): Promise<Aporte[]> => {
+  const response = await api.get('/aportes');
+  return response.data;
+};
 
-  /**
-   * POST /aportes
-   * Creates a new contribution.
-   */
-  createAporte: (dto: CreateAporteDto) =>
-    apiClient.post<Aporte>('/aportes', dto).then((r) => r.data),
+export const createAporte = async (data: CreateAportePayload): Promise<Aporte> => {
+  const response = await api.post('/aportes', data);
+  return response.data;
+};
 
-  /**
-   * DELETE /aportes/:id
-   * Removes a contribution.
-   */
-  deleteAporte: (id: string) =>
-    apiClient.delete(`/aportes/${id}`),
+export const deleteAporte = async (id: string): Promise<void> => {
+  await api.delete(`/aportes/${id}`);
 };

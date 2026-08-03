@@ -1,42 +1,34 @@
-// ─── Auth DTOs ────────────────────────────────────────────────────────────────
-
 export interface LoginDto {
   email: string;
-  password: string;
+  senha: string;
 }
 
-export interface RegisterDto {
+export interface CreateUsuarioDto {
   nome: string;
   email: string;
-  password: string;
-  /** Token de convite do casal */
-  conviteToken?: string;
+  senha: string;
+  codigoConvite?: string;
 }
 
-export interface ValidarConviteDto {
-  token: string;
+export interface CasalInfo {
+  id: string;
+  nome: string;
+  codigoConvite: string;
 }
 
-// ─── Auth Responses ───────────────────────────────────────────────────────────
-
-export interface AuthUser {
+export interface UsuarioInfo {
   id: string;
   nome: string;
   email: string;
-}
-
-export interface AuthCasal {
-  id: string;
-  nome: string;
+  casal: CasalInfo;
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  user: AuthUser;
-  casal: AuthCasal;
+  access_token: string;
+  usuario: UsuarioInfo;
 }
 
-export interface ConviteInfo {
-  casalNome: string;
-  convidadoPor: string;
+export interface ValidarConviteResponse {
+  id: string;
+  nome: string;
 }
