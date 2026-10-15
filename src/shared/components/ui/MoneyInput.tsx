@@ -7,6 +7,7 @@ interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
   label?: string;
   hint?: string;
   error?: string;
+  containerClassName?: string;
   /** Valor em centavos */
   value: number;
   onChange: (centavos: number) => void;

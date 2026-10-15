@@ -14,7 +14,7 @@ import { useAuthStore } from '@/shared/store/use-auth-store';
 import { ME_KEY, useMeQuery } from '@/features/auth/api/hooks';
 import { atualizarViagemService, criarViagemService } from '@/features/viagens/api/services';
 import type { SalvarViagemDto, ViagemResumo } from '@/features/viagens/api/types';
-import { metaFinal, totalEstimado, useRascunho, type Rascunho } from '../hooks/use-rascunho';
+import { metaFinal, totaisDoRascunho, useRascunho, type Rascunho } from '../hooks/use-rascunho';
 import { MapaDoRoteiro } from './MapaDoRoteiro';
 import { EtapaEntrada } from './etapas/EtapaEntrada';
 import { EtapaDestinos } from './etapas/EtapaDestinos';
@@ -51,21 +51,27 @@ function etapaValida(etapa: Etapa, r: Rascunho) {
 }
 
 function paraDto(r: Rascunho): SalvarViagemDto {
-  const conta = totalEstimado(r);
   const semNulos = <T extends object>(o: T) =>
     Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined)) as T;
+  const { itens } = totaisDoRascunho(r);
+
   return {
-    paradas: r.paradas.map((p) => semNulos({ ...p })) as SalvarViagemDto['paradas'],
+    paradas: r.paradas.map(({ contexto: _contexto, tipo: _tipo, ...p }) => semNulos(p)) as SalvarViagemDto['paradas'],
     ...(r.origem && { origem: semNulos({ nome: r.origem.nome, lat: r.origem.lat, lng: r.origem.lng, aeroporto: r.origem.aeroporto }) as SalvarViagemDto['origem'] }),
     dataIda: r.dataIda,
     dataVolta: r.dataVolta,
     metaCentavos: metaFinal(r),
-    estimativa: {
-      modo: r.metaModo,
-      companhia: r.companhia,
-      pessoas: r.pessoas,
-      ...(r.metaModo === 'estimativa' && { ...r.estimativa, dias: conta.dias, noites: conta.noites }),
-    },
+    pessoas: r.pessoas,
+    // Só os itens preenchidos viram custos de verdade
+    custos: itens.map((i) => ({
+      nome: i.nome.trim() || 'Item da viagem',
+      categoria: i.categoria,
+      valorUnitarioCentavos: i.valorUnitarioCentavos,
+      base: i.base,
+      situacao: i.situacao,
+      ...(i.situacao === 'PARCELADO' && { parcelas: i.parcelas, parcelasPagas: i.parcelasPagas }),
+    })),
+    estimativa: { companhia: r.companhia, pessoas: r.pessoas },
   };
 }
 
@@ -73,8 +79,7 @@ function paraDto(r: Rascunho): SalvarViagemDto {
 function rascunhoDaViagem(v?: ViagemResumo): Partial<Rascunho> | undefined {
   if (!v) return undefined;
   return {
-    metaModo: v.metaCentavos > 0 ? 'valor' : 'estimativa',
-    metaCentavos: v.metaCentavos,
+    ...(v.metaCentavos > 0 && { metaCentavos: v.metaCentavos, metaEditada: true }),
     ...(v.dataIda && { dataIda: v.dataIda }),
     ...(v.dataVolta && { dataVolta: v.dataVolta }),
   };

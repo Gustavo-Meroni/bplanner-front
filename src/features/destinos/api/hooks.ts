@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import api from '@/shared/api/client';
 import type { Cambio, CidadeEncontrada, ClimaDoMes, Feriado, Pais } from './types';
+import type { Aeroporto } from '@/features/viagens/api/types';
 
 const HORA = 60 * 60 * 1000;
 
@@ -62,6 +63,18 @@ export function useCambio(para: string | null | undefined, de = 'BRL') {
     queryFn: () => api.get<Cambio>('/destinos/cambio', { params: { de, para } }).then((r) => r.data),
     enabled: Boolean(para && para !== de),
     staleTime: 6 * HORA,
+    retry: false,
+  });
+}
+
+/** Aeroportos que atendem uma coordenada, do mais indicado ao menos */
+export function useAeroportos(lat: number | undefined, lng: number | undefined) {
+  return useQuery({
+    queryKey: ['destinos', 'aeroportos', lat?.toFixed(2), lng?.toFixed(2)],
+    queryFn: () =>
+      api.get<Aeroporto[]>('/destinos/aeroportos', { params: { lat, lng } }).then((r) => r.data),
+    enabled: lat !== undefined && lng !== undefined,
+    staleTime: Infinity,
     retry: false,
   });
 }

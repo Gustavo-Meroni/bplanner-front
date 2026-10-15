@@ -50,7 +50,7 @@ export function CidadeBusca({ label, placeholder, onEscolher, excluir = [], auto
           aria-expanded={resultados.length > 0}
           aria-controls={`${id}-lista`}
           value={termo}
-          placeholder={placeholder ?? 'Ex.: Buenos Aires, Salvador, Lisboa'}
+          placeholder={placeholder ?? 'Cidade ou bairro: Palermo, Salvador, Lisboa'}
           onChange={(e) => {
             setTermo(e.target.value);
             setAtivo(0);
@@ -78,18 +78,18 @@ export function CidadeBusca({ label, placeholder, onEscolher, excluir = [], auto
         <ul
           id={`${id}-lista`}
           role="listbox"
-          className="mt-1 overflow-hidden rounded-xl border border-border bg-card animate-in fade-in slide-in-from-top-1 duration-150"
+          className="mt-1 max-h-[17rem] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card animate-in fade-in slide-in-from-top-1 duration-150"
         >
           {isError ? (
             <li className="px-3.5 py-3 text-[13px] text-muted-foreground">
-              A busca de cidades está fora do ar agora. Tente de novo em instantes.
+              A busca está fora do ar agora. Tente de novo em instantes.
             </li>
           ) : resultados.length === 0 ? (
             <li className="px-3.5 py-3 text-[13px] text-muted-foreground">
-              {isFetching || !data ? 'Procurando…' : 'Nenhuma cidade com esse nome.'}
+              {isFetching || !data ? 'Procurando…' : 'Nenhum lugar com esse nome.'}
             </li>
           ) : (
-            resultados.slice(0, 6).map((c, i) => (
+            resultados.slice(0, 10).map((c, i) => (
               <li key={`${c.lat},${c.lng}`} role="option" aria-selected={i === ativo}>
                 <button
                   type="button"
@@ -104,7 +104,8 @@ export function CidadeBusca({ label, placeholder, onEscolher, excluir = [], auto
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-foreground">{c.nome}</span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {[c.regiao, c.pais].filter(Boolean).join(', ')}
+                      {c.tipo === 'bairro' && <span className="text-primary">bairro · </span>}
+                      {c.contexto ?? [c.regiao, c.pais].filter(Boolean).join(', ')}
                     </span>
                   </span>
                   {c.aeroporto && (

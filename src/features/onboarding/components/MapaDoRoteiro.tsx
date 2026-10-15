@@ -4,6 +4,7 @@ import { Wordmark } from '@/shared/components/brand/SunMark';
 import { SplitFlap } from '@/shared/components/brand/SplitFlap';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { WorldMap, viewBoxForPoints, type MapPin, type MapRoute } from '@/shared/components/map/WorldMap';
+import { Fontes } from '@/shared/components/ui/Fontes';
 import { dataCurta, duracao } from '@/shared/utils/datas';
 import type { Rascunho } from '../hooks/use-rascunho';
 import { Bandeira } from './Bandeira';
@@ -93,11 +94,14 @@ export function MapaDoRoteiro({ rascunho }: { rascunho: Rascunho }) {
         )}
       </div>
 
-      <p className="relative z-10 hidden border-t border-dashed border-foreground/15 px-8 py-4 text-[13px] leading-relaxed text-foreground/70 sm:block">
-        {dataIda && dataVolta && dataVolta >= dataIda
-          ? `${dataCurta(dataIda)} → ${dataCurta(dataVolta)} · ${duracao(dataIda, dataVolta).dias} dias`
-          : 'Seu cartão de embarque vai se montando enquanto você responde.'}
-      </p>
+      <div className="relative z-10 hidden items-end justify-between gap-4 border-t border-dashed border-foreground/15 px-8 py-4 sm:flex">
+        <p className="text-[13px] leading-relaxed text-foreground/70">
+          {dataIda && dataVolta && dataVolta >= dataIda
+            ? `${dataCurta(dataIda)} → ${dataCurta(dataVolta)} · ${duracao(dataIda, dataVolta).dias} dias`
+            : 'Seu cartão de embarque vai se montando enquanto você responde.'}
+        </p>
+        <Fontes className="shrink-0 text-right" />
+      </div>
     </div>
   );
 }

@@ -1,9 +1,14 @@
 export type PapelParticipante = 'DONO' | 'MEMBRO';
 export type TipoViagem = 'NACIONAL' | 'INTERNACIONAL';
 
-/** Cidade escolhida na busca (destino ou origem) */
+export type TipoDeLugar = 'cidade' | 'bairro' | 'regiao' | 'pais' | 'lugar';
+
+/** Lugar escolhido na busca: cidade ou bairro (destino ou origem) */
 export interface Cidade {
   nome: string;
+  /** Onde fica, para diferenciar homônimos: "Buenos Aires, Argentina" */
+  contexto: string | null;
+  tipo: TipoDeLugar;
   regiao: string | null;
   pais: string | null;
   codigoPais: string | null;
@@ -55,7 +60,42 @@ export interface SalvarViagemDto {
   dataIda: string;
   dataVolta: string;
   metaCentavos: number;
+  pessoas?: number;
+  custos?: ItemCustoDto[];
   estimativa?: Record<string, unknown>;
+}
+
+/** Como o valor de um item se multiplica para virar o total */
+export type BaseDoCusto = 'FIXO' | 'POR_PESSOA' | 'POR_NOITE' | 'POR_DIA' | 'POR_PESSOA_DIA';
+export type SituacaoDoCusto = 'A_PAGAR' | 'PAGO' | 'PARCELADO';
+export type CategoriaCusto =
+  | 'TRANSPORTE'
+  | 'HOSPEDAGEM'
+  | 'ALIMENTACAO'
+  | 'PASSEIOS'
+  | 'COMPRAS'
+  | 'SEGURO'
+  | 'DOCUMENTOS'
+  | 'OUTROS';
+
+/** Item previsto no onboarding; vira um custo com parcelas */
+export interface ItemCustoDto {
+  nome: string;
+  categoria?: CategoriaCusto;
+  valorUnitarioCentavos: number;
+  base: BaseDoCusto;
+  situacao: SituacaoDoCusto;
+  parcelas?: number;
+  parcelasPagas?: number;
+  primeiroVencimento?: string;
+}
+
+export interface Aeroporto {
+  iata: string;
+  nome: string;
+  cidade: string;
+  codigoPais: string;
+  distanciaKm: number;
 }
 
 export interface Convite {

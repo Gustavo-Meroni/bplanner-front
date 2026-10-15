@@ -6,6 +6,7 @@ import type { Cidade } from '@/features/viagens/api/types';
 import type { Rascunho } from '../../hooks/use-rascunho';
 import { Bandeira } from '../Bandeira';
 import { CidadeBusca } from '../CidadeBusca';
+import { AeroportoSelect } from '../AeroportoSelect';
 import { TituloEtapa } from './comum';
 
 const MAX_PARADAS = 5;
@@ -23,7 +24,7 @@ export function EtapaDestinos({
     <div>
       <TituloEtapa
         titulo="Para onde você vai?"
-        subtitulo="Escolha a cidade. Se o roteiro tiver mais de uma, adicione na ordem."
+        subtitulo="Cidade ou bairro. Se o roteiro tiver mais de um, adicione na ordem."
       />
 
       {paradas.length > 0 && (
@@ -46,10 +47,18 @@ export function EtapaDestinos({
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-foreground">{p.nome}</span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {[p.regiao, p.pais].filter(Boolean).join(', ')}
-                    {p.aeroporto && ` · ${p.aeroporto}`}
+                    {p.contexto ?? [p.regiao, p.pais].filter(Boolean).join(', ')}
                   </span>
                 </span>
+                <AeroportoSelect
+                  lat={p.lat}
+                  lng={p.lng}
+                  valor={p.aeroporto}
+                  descricao={`Aeroporto de ${p.nome}`}
+                  onEscolher={(iata) =>
+                    atualizar({ paradas: paradas.map((item, j) => (j === i ? { ...item, aeroporto: iata } : item)) })
+                  }
+                />
                 <button
                   type="button"
                   onClick={() => atualizar({ paradas: paradas.filter((_, j) => j !== i) })}
@@ -78,7 +87,11 @@ export function EtapaDestinos({
 
       <div className="mt-6 border-t border-dashed border-border pt-5">
         {origem ? (
-          <OrigemEscolhida origem={origem} onRemover={() => atualizar({ origem: null })} />
+          <OrigemEscolhida
+            origem={origem}
+            onRemover={() => atualizar({ origem: null })}
+            onTrocarAeroporto={(iata) => atualizar({ origem: { ...origem, aeroporto: iata } })}
+          />
         ) : (
           <CidadeBusca
             label="De onde você sai? (opcional)"
@@ -94,16 +107,28 @@ export function EtapaDestinos({
   );
 }
 
-function OrigemEscolhida({ origem, onRemover }: { origem: Cidade; onRemover: () => void }) {
+function OrigemEscolhida({
+  origem,
+  onRemover,
+  onTrocarAeroporto,
+}: {
+  origem: Cidade;
+  onRemover: () => void;
+  onTrocarAeroporto: (iata: string | null) => void;
+}) {
   return (
     <div>
       <p className="mb-1 text-[13px] font-semibold text-foreground">Saindo de</p>
       <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
         <PlaneTakeoff size={18} className="shrink-0 text-muted-foreground" />
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-          {origem.nome}
-          {origem.aeroporto && <span className="ml-1.5 text-xs font-medium text-muted-foreground">{origem.aeroporto}</span>}
-        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{origem.nome}</span>
+        <AeroportoSelect
+          lat={origem.lat}
+          lng={origem.lng}
+          valor={origem.aeroporto}
+          descricao={`Aeroporto de ${origem.nome}`}
+          onEscolher={onTrocarAeroporto}
+        />
         <button
           type="button"
           onClick={onRemover}
