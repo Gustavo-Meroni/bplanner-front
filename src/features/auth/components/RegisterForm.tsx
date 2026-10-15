@@ -2,23 +2,45 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { CheckCircle2, Loader2, SearchX } from 'lucide-react';
 import { useRegisterMutation, useValidarConviteQuery } from '../api/hooks';
 import { registerSchema, type RegisterFormData } from '../schemas/auth-schema';
-import { Input } from '@/shared/components/ui/Input';
+import type { CreateUsuarioDto } from '../api/types';
+import { Input, PasswordInput } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
+import { cn } from '@/lib/utils';
+
+const MODES = [
+  {
+    value: false,
+    title: 'Novo planejamento',
+    description: 'Você cria e convida seu par depois.',
+  },
+  {
+    value: true,
+    title: 'Tenho um convite',
+    description: 'Seu par já criou e te mandou o código.',
+  },
+];
 
 export function RegisterForm() {
-  const { mutate: registrar, isPending: isSubmitting } = useRegisterMutation();
+  const { mutate: registrar, isPending } = useRegisterMutation();
 
-  const form = useForm<RegisterFormData>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    clearErrors,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: { temConvite: false, codigoConvite: '', nomeCasal: '' },
   });
 
-  const temConvite = form.watch('temConvite');
-  const codigoDigitado = form.watch('codigoConvite') || '';
+  const temConvite = watch('temConvite');
+  const codigoDigitado = watch('codigoConvite') || '';
 
   const {
     data: grupoEncontrado,
@@ -26,8 +48,15 @@ export function RegisterForm() {
     isError: isConviteInvalido,
   } = useValidarConviteQuery(temConvite ? codigoDigitado : '');
 
+  const selectMode = (comConvite: boolean) => {
+    setValue('temConvite', comConvite);
+    setValue('codigoConvite', '');
+    setValue('nomeCasal', '');
+    clearErrors(['codigoConvite', 'nomeCasal']);
+  };
+
   const onSubmit = (data: RegisterFormData) => {
-    const payload = {
+    const payload: CreateUsuarioDto = {
       nome: data.nome,
       email: data.email,
       senha: data.senha,
@@ -35,170 +64,157 @@ export function RegisterForm() {
         ? { codigoConvite: data.codigoConvite.toUpperCase() }
         : { nomeCasal: data.nomeCasal }),
     };
-    registrar(payload as any);
+    registrar(payload);
   };
 
+  const codigoRegister = register('codigoConvite');
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label className="block text-xs font-bold text-foreground uppercase mb-1">Seu Nome</label>
-        <Input
-          type="text"
-          placeholder="Ex: Gustavo"
-          {...form.register('nome')}
-          className="bg-background/50"
-        />
-        {form.formState.errors.nome && (
-          <span className="text-xs text-destructive mt-1 flex items-center gap-1">
-            <AlertCircle size={12} /> {form.formState.errors.nome.message}
-          </span>
-        )}
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" noValidate>
+      <Input
+        label="Seu nome"
+        autoComplete="given-name"
+        placeholder="Como seu par te chama"
+        error={errors.nome?.message}
+        {...register('nome')}
+      />
 
-      <div>
-        <label className="block text-xs font-bold text-foreground uppercase mb-1">Email</label>
-        <div className="relative">
-          <Input
-            type="email"
-            placeholder="seu@email.com"
-            {...form.register('email')}
-            className="bg-background/50"
-          />
-          {!form.formState.errors.email && form.watch('email') && (
-            <CheckCircle2
-              size={16}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-success"
-            />
-          )}
+      <Input
+        label="Email"
+        type="email"
+        autoComplete="email"
+        placeholder="voce@email.com"
+        error={errors.email?.message}
+        {...register('email')}
+      />
+
+      <PasswordInput
+        label="Senha"
+        autoComplete="new-password"
+        placeholder="Mínimo de 6 caracteres"
+        error={errors.senha?.message}
+        {...register('senha')}
+      />
+
+      {/* Como vão começar */}
+      <fieldset className="pt-1">
+        <legend className="mb-1.5 text-[13px] font-semibold text-foreground">Como vocês vão começar?</legend>
+        <div className="grid grid-cols-2 gap-2.5">
+          {MODES.map((mode) => {
+            const selected = temConvite === mode.value;
+            return (
+              <label
+                key={mode.title}
+                className={cn(
+                  'relative cursor-pointer rounded-xl border px-3 py-2.5 transition-colors',
+                  'has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring/15',
+                  selected
+                    ? 'border-celeste bg-celeste/[0.07]'
+                    : 'border-border hover:border-foreground/25'
+                )}
+              >
+                <input
+                  type="radio"
+                  name="modo-cadastro"
+                  className="sr-only"
+                  checked={selected}
+                  onChange={() => selectMode(mode.value)}
+                />
+                <span className="flex items-start justify-between gap-2">
+                  <span className="text-sm font-semibold text-foreground">{mode.title}</span>
+                  <span
+                    className={cn(
+                      'mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                      selected ? 'border-celeste' : 'border-muted-foreground/40'
+                    )}
+                  >
+                    {selected && (
+                      <motion.span
+                        layoutId="register-mode-dot"
+                        className="size-1.5 rounded-full bg-celeste"
+                        transition={{ type: 'spring', bounce: 0.3, duration: 0.4 }}
+                      />
+                    )}
+                  </span>
+                </span>
+                <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                  {mode.description}
+                </span>
+              </label>
+            );
+          })}
         </div>
-        {form.formState.errors.email && (
-          <span className="text-xs text-destructive mt-1 flex items-center gap-1">
-            <AlertCircle size={12} /> {form.formState.errors.email.message}
-          </span>
-        )}
-      </div>
+      </fieldset>
 
-      <div>
-        <label className="block text-xs font-bold text-foreground uppercase mb-1">Senha</label>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          {...form.register('senha')}
-          className="bg-background/50"
-        />
-        {form.formState.errors.senha && (
-          <span className="text-xs text-destructive mt-1 flex items-center gap-1">
-            <AlertCircle size={12} /> {form.formState.errors.senha.message}
-          </span>
-        )}
-      </div>
+      {/* Campo que depende da escolha */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={temConvite ? 'convite' : 'novo'}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="overflow-hidden"
+        >
+          {temConvite ? (
+            <div className="space-y-2 pt-1">
+              <Input
+                label="Código do convite"
+                maxLength={6}
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="ABC123"
+                error={errors.codigoConvite?.message}
+                className="font-semibold uppercase tracking-[0.4em] placeholder:tracking-[0.4em]"
+                {...codigoRegister}
+                onChange={(e) => {
+                  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  codigoRegister.onChange(e);
+                }}
+              />
 
-      {/* Convite Toggle */}
-      <div className="pt-2 pb-1">
-        <label className="flex items-center gap-3 cursor-pointer group">
-          <div className="relative flex items-center">
-            <input
-              type="checkbox"
-              {...form.register('temConvite')}
-              onChange={(e) => {
-                form.setValue('temConvite', e.target.checked);
-                form.setValue('codigoConvite', '');
-                form.setValue('nomeCasal', '');
-                form.clearErrors(['codigoConvite', 'nomeCasal']);
-              }}
-              className="peer sr-only"
-            />
-            <div className="w-5 h-5 rounded-md border-2 border-muted-foreground peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center">
-              <CheckCircle2
-                size={14}
-                className="text-primary-foreground opacity-0 peer-checked:opacity-100"
-                strokeWidth={3}
+              <div aria-live="polite" className="min-h-5 text-xs font-medium">
+                {isValidandoConvite && (
+                  <p className="flex items-center gap-1.5 text-muted-foreground">
+                    <Loader2 size={13} className="animate-spin" /> Procurando o planejamento…
+                  </p>
+                )}
+                {grupoEncontrado && (
+                  <p className="flex items-center gap-1.5 text-success animate-in fade-in zoom-in-95 duration-300">
+                    <CheckCircle2 size={14} />
+                    <span className="text-foreground">
+                      Você vai entrar em <strong className="font-semibold">{grupoEncontrado.nome}</strong>
+                    </span>
+                  </p>
+                )}
+                {isConviteInvalido && codigoDigitado.length === 6 && (
+                  <p className="flex items-center gap-1.5 text-destructive">
+                    <SearchX size={13} /> Nenhum planejamento com esse código. Confira com seu par.
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="pt-1">
+              <Input
+                label="Nome do planejamento"
+                placeholder="Ex.: Gustavo e Rafa"
+                error={errors.nomeCasal?.message}
+                {...register('nomeCasal')}
               />
             </div>
-          </div>
-          <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-            Tenho o código de convite do meu parceiro(a)
-          </span>
-        </label>
-      </div>
-
-      {/* Campo Dinâmico Convite vs Novo Casal */}
-      <AnimatePresence mode="wait">
-        {temConvite ? (
-          <motion.div
-            key="convite"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <label className="block text-xs font-bold text-foreground uppercase mb-1">
-              Código do Convite
-            </label>
-            <Input
-              type="text"
-              maxLength={6}
-              placeholder="XXXXXX"
-              {...form.register('codigoConvite')}
-              className="bg-background/50 font-mono tracking-widest uppercase"
-            />
-            {form.formState.errors.codigoConvite && (
-              <span className="text-xs text-destructive mt-1 flex items-center gap-1">
-                <AlertCircle size={12} /> {form.formState.errors.codigoConvite.message}
-              </span>
-            )}
-
-            {isValidandoConvite && (
-              <p className="text-xs text-muted-foreground italic mt-2">Buscando grupo...</p>
-            )}
-            {grupoEncontrado && (
-              <div className="mt-2 p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs text-foreground font-semibold flex items-center gap-2">
-                <span>🔒</span>
-                <span>
-                  Entrando em: <strong className="text-primary">{grupoEncontrado.nome}</strong>
-                </span>
-              </div>
-            )}
-            {isConviteInvalido && codigoDigitado.length === 6 && (
-              <p className="text-xs text-destructive font-medium mt-2 flex items-center gap-1">
-                <AlertCircle size={12} /> Convite não encontrado.
-              </p>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="novo-casal"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <label className="block text-xs font-bold text-foreground uppercase mb-1">
-              Nome do Novo Casal
-            </label>
-            <Input
-              type="text"
-              placeholder="Ex: Casal Silva"
-              {...form.register('nomeCasal')}
-              className="bg-background/50"
-            />
-            {form.formState.errors.nomeCasal && (
-              <span className="text-xs text-destructive mt-1 flex items-center gap-1">
-                <AlertCircle size={12} /> {form.formState.errors.nomeCasal.message}
-              </span>
-            )}
-          </motion.div>
-        )}
+          )}
+        </motion.div>
       </AnimatePresence>
 
       <Button
         type="submit"
         size="lg"
         disabled={temConvite && !grupoEncontrado}
-        isLoading={isSubmitting}
-        className="w-full mt-6"
+        isLoading={isPending}
+        className="mt-1 w-full"
       >
-        Começar Agora
+        {isPending ? 'Criando conta…' : 'Criar conta'}
       </Button>
     </form>
   );

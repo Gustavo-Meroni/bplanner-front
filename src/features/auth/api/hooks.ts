@@ -49,7 +49,7 @@ export const useRegisterMutation = () => {
   return useMutation({
     mutationFn: (data: CreateUsuarioDto) => registerService(data),
     onSuccess: () => {
-      toast.success('Conta criada com sucesso! Faça login para continuar.');
+      toast.success('Conta criada. Agora é só entrar com seu email e senha.');
       router.push('/login');
     },
     onError: (error) => {

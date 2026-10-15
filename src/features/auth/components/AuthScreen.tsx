@@ -1,77 +1,108 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeToggle } from '@/shared/components/theme-toggle';
+import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { AuthVisualSide } from './AuthVisualSide';
-import { AuthSegmentedTabs } from './AuthSegmentedTabs';
+import { AuthSegmentedTabs, type AuthTab } from './AuthSegmentedTabs';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 
 interface AuthScreenProps {
-  initialTab?: 'login' | 'register';
+  initialTab?: AuthTab;
+}
+
+const COPY: Record<AuthTab, { title: string; subtitle: string; href: string; docTitle: string }> = {
+  login: {
+    title: 'Que bom te ver de novo',
+    subtitle: 'Entre para ver quanto falta para o embarque.',
+    href: '/login',
+    docTitle: 'Entrar | BPlanner',
+  },
+  register: {
+    title: 'Prepare as malas',
+    subtitle: 'Crie sua conta e monte o plano da próxima viagem.',
+    href: '/registrar',
+    docTitle: 'Criar Conta | BPlanner',
+  },
+};
+
+/** Recorte de "picote" entre o canhoto e o cartão de embarque. */
+function Perforation() {
+  const notch = 'absolute size-6 rounded-full border border-border bg-background';
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {/* horizontal (mobile) */}
+      <div className="lg:hidden">
+        <div className="absolute inset-x-6 top-0 border-t-2 border-dashed border-border" />
+        <div className={`${notch} -left-3 -top-3`} />
+        <div className={`${notch} -right-3 -top-3`} />
+      </div>
+      {/* vertical (desktop) */}
+      <div className="hidden lg:block">
+        <div className="absolute inset-y-6 left-0 border-l-2 border-dashed border-border" />
+        <div className={`${notch} -left-3 -top-3`} />
+        <div className={`${notch} -bottom-3 -left-3`} />
+      </div>
+    </div>
+  );
 }
 
 export const AuthScreen = ({ initialTab = 'login' }: AuthScreenProps) => {
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
+  const pathname = usePathname();
+  const reduce = useReducedMotion() ?? false;
+
+  // A aba vem da URL, então /login e /registrar continuam linkáveis
+  const activeTab: AuthTab = pathname?.startsWith('/registrar')
+    ? 'register'
+    : pathname?.startsWith('/login')
+      ? 'login'
+      : initialTab;
+
+  const handleTabChange = (tab: AuthTab) => {
+    if (tab === activeTab) return;
+    window.history.replaceState(null, '', COPY[tab].href);
+    document.title = COPY[tab].docTitle;
+  };
+
+  const copy = COPY[activeTab];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      {/* CARD PRINCIPAL (SPLIT) */}
-      <div className="w-full max-w-5xl bg-card rounded-[2.5rem] shadow-2xl border border-border/50 overflow-hidden flex flex-col lg:flex-row relative">
-        {/* Lado Visual (Esquerda) */}
+    <main className="flex min-h-dvh items-center justify-center overflow-hidden p-3 sm:p-4">
+      <motion.div
+        initial={reduce ? false : { opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="relative flex w-full max-w-[880px] flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_40px_80px_-40px_hsl(var(--foreground)/0.35)] lg:min-h-[540px] lg:flex-row"
+      >
         <AuthVisualSide />
 
-        {/* Lado Formulário (Direita) */}
-        <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col relative z-20">
-          {/* Topo Direito: Theme Toggle */}
-          <div className="absolute top-6 right-6">
-            <ThemeToggle />
+        <section className="relative flex flex-1 flex-col px-6 py-8 sm:px-10 lg:py-6">
+          <Perforation />
+
+          <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
+            <AuthSegmentedTabs activeTab={activeTab} onTabChange={handleTabChange} />
+
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <header className="mb-4">
+                  <h1 className="font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]">
+                    {copy.title}
+                  </h1>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{copy.subtitle}</p>
+                </header>
+
+                {activeTab === 'login' ? <LoginForm /> : <RegisterForm />}
+              </motion.div>
+            </AnimatePresence>
           </div>
-
-          <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full mt-8 lg:mt-0">
-            {/* Header Form */}
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-2">
-                {activeTab === 'login' ? 'Bem-vindo de volta' : 'Sua jornada a dois'}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Gerencie finanças, metas e o futuro do casal em um só lugar.
-              </p>
-            </div>
-
-            {/* Segmented Control (Tabs) */}
-            <AuthSegmentedTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-            {/* Area do Form animada */}
-            <div className="relative min-h-[300px]">
-              <AnimatePresence mode="wait">
-                {activeTab === 'login' ? (
-                  <motion.div
-                    key="login"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <LoginForm />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="register"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <RegisterForm />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        </section>
+      </motion.div>
+    </main>
   );
 };

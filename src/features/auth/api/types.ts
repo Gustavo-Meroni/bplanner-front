@@ -8,6 +8,7 @@ export interface CreateUsuarioDto {
   email: string;
   senha: string;
   codigoConvite?: string;
+  nomeCasal?: string;
 }
 
 export interface CasalInfo {

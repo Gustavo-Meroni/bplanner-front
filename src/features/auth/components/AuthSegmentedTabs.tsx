@@ -1,42 +1,48 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
+import { cn } from '@/lib/utils';
+
+export type AuthTab = 'login' | 'register';
 
 interface AuthSegmentedTabsProps {
-  activeTab: 'login' | 'register';
-  onTabChange: (tab: 'login' | 'register') => void;
+  activeTab: AuthTab;
+  onTabChange: (tab: AuthTab) => void;
 }
+
+const TABS: Array<{ id: AuthTab; label: string }> = [
+  { id: 'login', label: 'Entrar' },
+  { id: 'register', label: 'Criar conta' },
+];
 
 export function AuthSegmentedTabs({ activeTab, onTabChange }: AuthSegmentedTabsProps) {
   return (
-    <div className="flex p-1 mb-8 bg-muted rounded-2xl relative">
-      <button
-        type="button"
-        onClick={() => onTabChange('login')}
-        className={`flex-1 relative z-10 py-2.5 text-sm font-semibold transition-colors rounded-xl ${
-          activeTab === 'login' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        ENTRAR
-      </button>
-      <button
-        type="button"
-        onClick={() => onTabChange('register')}
-        className={`flex-1 relative z-10 py-2.5 text-sm font-semibold transition-colors rounded-xl ${
-          activeTab === 'register' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        CADASTRAR
-      </button>
-
-      {/* Pill Animação */}
-      <motion.div
-        className="absolute inset-y-1 w-[calc(50%-4px)] bg-card rounded-xl shadow-sm border border-border"
-        animate={{
-          left: activeTab === 'login' ? '4px' : 'calc(50% + 2px)',
-        }}
-        transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
-      />
+    <div role="tablist" aria-label="Acesso" className="mb-5 flex rounded-full bg-muted p-1">
+      {TABS.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onTabChange(tab.id)}
+            className={cn(
+              'relative flex-1 rounded-full py-2 text-sm font-semibold transition-colors',
+              isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {isActive && (
+              <motion.span
+                layoutId="auth-tab-pill"
+                className="absolute inset-0 rounded-full border border-border bg-card shadow-sm"
+                transition={{ type: 'spring', bounce: 0.18, duration: 0.5 }}
+              />
+            )}
+            <span className="relative">{tab.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

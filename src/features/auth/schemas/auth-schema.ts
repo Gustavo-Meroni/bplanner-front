@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 export const loginSchema = z.object({
   email: z.string().email('Informe um email válido'),
-  senha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres'),
+  senha: z.string().min(6, 'A senha precisa ter pelo menos 6 caracteres'),
 });
 
 export const registerSchema = z
   .object({
-    nome: z.string().min(2, 'O nome deve ter no mínimo 2 caracteres'),
+    nome: z.string().min(2, 'Seu nome precisa ter pelo menos 2 caracteres'),
     email: z.string().email('Informe um email válido'),
-    senha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres'),
+    senha: z.string().min(6, 'A senha precisa ter pelo menos 6 caracteres'),
     temConvite: z.boolean(),
     codigoConvite: z.string().optional(),
     nomeCasal: z.string().optional(),
@@ -22,7 +22,7 @@ export const registerSchema = z
       return true;
     },
     {
-      message: 'Informe um código de convite válido (6 caracteres)',
+      message: 'O código tem 6 caracteres',
       path: ['codigoConvite'],
     }
   )
@@ -34,7 +34,7 @@ export const registerSchema = z
       return true;
     },
     {
-      message: 'Informe o nome do casal (mínimo 2 caracteres)',
+      message: 'Dê um nome ao planejamento (mínimo de 2 caracteres)',
       path: ['nomeCasal'],
     }
   );
