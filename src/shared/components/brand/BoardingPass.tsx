@@ -12,10 +12,13 @@ export function BoardingPassCard({
   stub,
   children,
   className,
+  contentClassName,
 }: {
   stub: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  /** Classes do miolo do lado direito (largura, alinhamento) */
+  contentClassName?: string;
 }) {
   const reduce = useReducedMotion() ?? false;
 
@@ -33,7 +36,9 @@ export function BoardingPassCard({
         {stub}
         <section className="relative flex flex-1 flex-col px-6 py-8 sm:px-10 lg:py-6">
           <Perforation />
-          <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">{children}</div>
+          <div className={cn('mx-auto flex w-full max-w-sm flex-1 flex-col justify-center', contentClassName)}>
+            {children}
+          </div>
         </section>
       </motion.div>
     </main>

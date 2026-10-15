@@ -32,8 +32,12 @@ export interface MapRoute {
 export interface MapPin {
   id: string;
   at: LatLng;
-  /** "destination" pulsa e usa a cor principal; "origin" é discreto */
+  /** "destination" usa a cor principal; "origin" é discreto */
   kind?: 'origin' | 'destination';
+  /** Anel pulsando em volta (padrão: true para destino) */
+  pulse?: boolean;
+  /** Número exibido ao lado do pin (ordem no roteiro) */
+  label?: string;
 }
 
 export const MAP_WIDTH = 1000;
@@ -53,6 +57,35 @@ export function viewBoxAround(at: LatLng, width = 520, height = 330): [number, n
   const vx = Math.min(Math.max(x - width / 2, 0), MAP_WIDTH - width);
   const vy = Math.min(Math.max(y - height / 2, 0), MAP_HEIGHT - height);
   return [Math.round(vx), Math.round(vy), width, height];
+}
+
+/**
+ * Recorte que enquadra todos os pontos com folga, na proporção do canhoto.
+ * Sem pontos, mostra Américas, Atlântico, Europa e África.
+ */
+export function viewBoxForPoints(
+  pontos: LatLng[],
+  { aspecto = 520 / 330, folga = 70, minLargura = 300 } = {}
+): [number, number, number, number] {
+  if (pontos.length === 0) return [150, 30, 520, 330];
+  const xy = pontos.map(project);
+  let minX = Math.min(...xy.map((p) => p.x)) - folga;
+  let maxX = Math.max(...xy.map((p) => p.x)) + folga;
+  let minY = Math.min(...xy.map((p) => p.y)) - folga;
+  let maxY = Math.max(...xy.map((p) => p.y)) + folga;
+
+  let largura = Math.max(maxX - minX, minLargura);
+  let altura = maxY - minY;
+  if (largura / altura > aspecto) altura = largura / aspecto;
+  else largura = altura * aspecto;
+  largura = Math.min(largura, MAP_WIDTH);
+  altura = Math.min(altura, MAP_HEIGHT);
+
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const x = Math.min(Math.max(cx - largura / 2, 0), MAP_WIDTH - largura);
+  const y = Math.min(Math.max(cy - altura / 2, 0), MAP_HEIGHT - altura);
+  return [Math.round(x), Math.round(y), Math.round(largura), Math.round(altura)];
 }
 
 /** Arco curvado para cima entre dois pontos (curva quadrática). */
@@ -130,9 +163,15 @@ export function WorldMap({
 
   const vb = viewBox ?? [0, 0, MAP_WIDTH, MAP_HEIGHT];
 
+  const vbTexto = vb.join(' ');
+
   return (
-    <svg
-      viewBox={vb.join(' ')}
+    // O recorte (viewBox) é animado: o mapa "viaja" até o novo enquadramento
+    <motion.svg
+      viewBox={vbTexto}
+      initial={false}
+      animate={{ viewBox: vbTexto }}
+      transition={{ duration: reduce ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }}
       preserveAspectRatio={preserveAspectRatio}
       aria-hidden="true"
       className={className}
@@ -196,9 +235,10 @@ export function WorldMap({
         {pins.map((pin) => {
           const p = project(pin.at);
           const isDest = pin.kind !== 'origin';
+          const pulsar = pin.pulse ?? isDest;
           return (
             <g key={pin.id} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}>
-              {isDest && !reduce && (
+              {pulsar && !reduce && (
                 <motion.circle
                   r={6}
                   fill="hsl(var(--primary) / 0.35)"
@@ -216,10 +256,24 @@ export function WorldMap({
                 animate={{ scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 18, delay: isDest ? 0.9 : 0 }}
               />
+              {pin.label && (
+                <text
+                  x={9}
+                  y={-8}
+                  fontSize={11}
+                  fontWeight={700}
+                  fill="hsl(var(--foreground))"
+                  stroke="hsl(var(--card))"
+                  strokeWidth={3}
+                  paintOrder="stroke"
+                >
+                  {pin.label}
+                </text>
+              )}
             </g>
           );
         })}
       </motion.g>
-    </svg>
+    </motion.svg>
   );
 }

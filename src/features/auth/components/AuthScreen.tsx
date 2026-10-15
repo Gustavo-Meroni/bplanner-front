@@ -81,7 +81,7 @@ function AvisoConvite({ codigo }: { codigo: string }) {
   const { data } = useConvitePreviaQuery(codigo);
   if (!data) return null;
 
-  const destino = data.viagem.destinoNome ?? data.viagem.nome;
+  const destino = data.viagem.paradas[0]?.nome ?? data.viagem.nome;
   return (
     <div className="mb-5 flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.07] px-3.5 py-2.5 animate-in fade-in slide-in-from-top-1 duration-300">
       <Ticket size={18} className="shrink-0 text-primary" />

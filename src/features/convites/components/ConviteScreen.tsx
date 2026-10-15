@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { BoardingPassCard } from '@/shared/components/brand/BoardingPass';
 import { Wordmark } from '@/shared/components/brand/SunMark';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
-import { WorldMap, viewBoxAround, MAP_HEIGHT, MAP_WIDTH } from '@/shared/components/map/WorldMap';
+import { WorldMap, viewBoxForPoints, type MapRoute } from '@/shared/components/map/WorldMap';
 import { Button, buttonClasses } from '@/shared/components/ui/Button';
 import { useAuthStore } from '@/shared/store/use-auth-store';
 import { useHydrated } from '@/shared/hooks/use-hydrated';
@@ -41,8 +41,10 @@ export function ConviteScreen({ codigo }: { codigo: string }) {
 /** Lado esquerdo: destino no mapa, datas e quem já está na viagem */
 function Canhoto({ convite }: { convite?: ConvitePrevia }) {
   const v = convite?.viagem;
-  const temDestino = v?.destinoLat != null && v?.destinoLng != null;
-  const destino = temDestino ? { lat: v!.destinoLat!, lng: v!.destinoLng! } : null;
+  const paradas = v?.paradas ?? [];
+  const pontos = paradas.map((p) => ({ lat: p.lat, lng: p.lng }));
+  const rotas: MapRoute[] = pontos.slice(1).map((p, i) => ({ id: `r${i}`, from: pontos[i], to: p, active: true }));
+  const paises = [...new Set(paradas.map((p) => p.pais).filter(Boolean))];
 
   return (
     <div
@@ -64,13 +66,13 @@ function Canhoto({ convite }: { convite?: ConvitePrevia }) {
               {convite.convidadoPor ? `${convite.convidadoPor} te convidou para` : 'Você foi convidado para'}
             </p>
             <h1 className="mt-1 font-display text-4xl leading-none text-foreground sm:text-5xl">
-              {v!.destinoNome ?? v!.nome}
+              {paradas.length ? paradas.map((p) => p.nome).join(' → ') : v!.nome}
             </h1>
 
             <dl className="mt-5 space-y-2 text-sm text-foreground/80">
               <div className="flex items-center gap-2">
                 <MapPin size={15} className="text-primary" />
-                <dd>{v!.destinoPais ?? 'Destino ainda a definir'}</dd>
+                <dd>{paises.length ? paises.join(', ') : 'Destino ainda a definir'}</dd>
               </div>
               {v!.dataIda && (
                 <div className="flex items-center gap-2">
@@ -93,9 +95,10 @@ function Canhoto({ convite }: { convite?: ConvitePrevia }) {
       <div className="relative mt-2 h-[170px] sm:h-[210px] lg:mt-0 lg:h-auto lg:min-h-[230px] lg:flex-1">
         <WorldMap
           className="map-fade-top absolute inset-0 h-full w-full"
-          viewBox={destino ? viewBoxAround(destino) : [0, 0, MAP_WIDTH, MAP_HEIGHT]}
+          viewBox={viewBoxForPoints(pontos)}
           parallax
-          pins={destino ? [{ id: 'destino', at: destino, kind: 'destination' }] : []}
+          routes={rotas}
+          pins={pontos.map((at, i) => ({ id: `p${i}`, at, kind: 'destination' as const, pulse: i === pontos.length - 1 }))}
         />
       </div>
     </div>
@@ -121,7 +124,7 @@ function Acoes({ convite, codigo }: { convite: ConvitePrevia; codigo: string }) 
     onError: (erro) => toast.error(mensagemDeErro(erro, 'Não foi possível entrar na viagem.')),
   });
 
-  const destino = convite.viagem.destinoNome ?? convite.viagem.nome;
+  const destino = convite.viagem.paradas[0]?.nome ?? convite.viagem.nome;
   const query = `?convite=${encodeURIComponent(codigo)}`;
 
   return (

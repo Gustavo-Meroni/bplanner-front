@@ -3,10 +3,7 @@ export interface ConvitePrevia {
   convidadoPor: string | null;
   viagem: {
     nome: string;
-    destinoNome: string | null;
-    destinoPais: string | null;
-    destinoLat: number | null;
-    destinoLng: number | null;
+    paradas: Array<{ nome: string; pais: string | null; codigoPais: string | null; lat: number; lng: number }>;
     dataIda: string | null;
     dataVolta: string | null;
   };
