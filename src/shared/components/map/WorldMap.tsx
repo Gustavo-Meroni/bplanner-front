@@ -47,6 +47,14 @@ export function project({ lat, lng }: LatLng) {
   };
 }
 
+/** Recorte do mapa centrado num ponto, sem sair das bordas */
+export function viewBoxAround(at: LatLng, width = 520, height = 330): [number, number, number, number] {
+  const { x, y } = project(at);
+  const vx = Math.min(Math.max(x - width / 2, 0), MAP_WIDTH - width);
+  const vy = Math.min(Math.max(y - height / 2, 0), MAP_HEIGHT - height);
+  return [Math.round(vx), Math.round(vy), width, height];
+}
+
 /** Arco curvado para cima entre dois pontos (curva quadrática). */
 export function arcPath(from: LatLng, to: LatLng) {
   const a = project(from);

@@ -7,16 +7,15 @@ import { loginSchema, type LoginFormData } from '../schemas/auth-schema';
 import { Input, PasswordInput } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
 
-export function LoginForm() {
-  const { mutate: login, isPending } = useLoginMutation();
+export function LoginForm({ convite }: { convite?: string | null }) {
+  const { mutate: login, isPending, isSuccess } = useLoginMutation(convite);
+  const ocupado = isPending || isSuccess;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
+  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-3.5" noValidate>
@@ -37,8 +36,8 @@ export function LoginForm() {
         {...register('senha')}
       />
 
-      <Button type="submit" size="lg" isLoading={isPending} className="mt-2 w-full">
-        {isPending ? 'Entrando…' : 'Entrar'}
+      <Button type="submit" size="lg" isLoading={ocupado} className="mt-2 w-full">
+        {ocupado ? 'Entrando…' : 'Entrar'}
       </Button>
     </form>
   );

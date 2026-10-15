@@ -1,23 +1,10 @@
 import api from '@/shared/api/client';
-import {
-  AuthResponse,
-  CreateUsuarioDto,
-  LoginDto,
-  UsuarioInfo,
-  ValidarConviteResponse,
-} from './types';
+import type { AuthResponse, CreateUsuarioDto, LoginDto, Me } from './types';
 
-export const loginService = async (data: LoginDto): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/login', data);
-  return response.data;
-};
+export const loginService = (data: LoginDto) =>
+  api.post<AuthResponse>('/auth/login', data).then((r) => r.data);
 
-export const registerService = async (data: CreateUsuarioDto): Promise<UsuarioInfo> => {
-  const response = await api.post<UsuarioInfo>('/auth/registrar', data);
-  return response.data;
-};
+export const registerService = (data: CreateUsuarioDto) =>
+  api.post<AuthResponse>('/auth/registrar', data).then((r) => r.data);
 
-export const validarConviteService = async (codigo: string): Promise<ValidarConviteResponse> => {
-  const response = await api.get<ValidarConviteResponse>(`/auth/validar-convite/${codigo}`);
-  return response.data;
-};
+export const meService = () => api.get<Me>('/auth/me').then((r) => r.data);

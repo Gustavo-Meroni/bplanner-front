@@ -3,7 +3,9 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, PieChart, Target, X, LogOut, User } from 'lucide-react';
 import { useUIStore } from '@/shared/store/use-ui-store';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/shared/store/use-auth-store';
+import { encerrarSessao } from '@/shared/auth/session';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { Button } from '@/shared/components/ui/Button'; // Importando nosso primitivo!
 import { cn } from '@/lib/utils';
@@ -18,8 +20,8 @@ export function Sidebar() {
   const router = useRouter();
   const { isMobileOpen, setMobileOpen } = useUIStore();
 
-  const casal = useAuthStore((s) => s.casal);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
 
   const handleNav = (href: string) => {
     router.push(href);
@@ -27,8 +29,8 @@ export function Sidebar() {
   };
 
   const handleLogout = () => {
-    clearAuth();
-    document.cookie = 'bplanner-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    encerrarSessao();
+    qc.clear();
     setMobileOpen(false);
     router.push('/login');
   };
@@ -119,7 +121,7 @@ export function Sidebar() {
                 {/* flex-1 e min-w-0 garantem que o texto ocupe o máximo de espaço dinamicamente */}
                 <div className="flex flex-col text-left flex-1 min-w-0 pr-2">
                   <span className="text-sm font-bold text-foreground truncate block w-full">
-                    {casal?.nome ?? 'Casal'}
+                    {user?.nome ?? 'Viajante'}
                   </span>
                   <span className="text-[10px] font-medium text-muted-foreground">
                     Status: Poupando

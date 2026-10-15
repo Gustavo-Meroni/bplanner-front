@@ -1,72 +1,83 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { mensagemDeErro } from '@/shared/api/client';
+import { iniciarSessao } from '@/shared/auth/session';
 import { useAuthStore } from '@/shared/store/use-auth-store';
-import { loginService, registerService, validarConviteService } from './services';
-import { CreateUsuarioDto, LoginDto } from './types';
+import { aceitarConviteService } from '@/features/convites/api/services';
+import { loginService, meService, registerService } from './services';
+import type { AuthResponse, CreateUsuarioDto, LoginDto, Me } from './types';
 
-// Helper para tratar mensagens de erro vindas do NestJS ValidationPipe
-const getErrorMessage = (error: any): string => {
-  const message = error?.response?.data?.message;
-  if (Array.isArray(message)) {
-    return message[0];
-  }
-  return message || 'Ocorreu um erro inesperado. Tente novamente.';
-};
+export const ME_KEY = ['me'] as const;
 
-export const useLoginMutation = () => {
+export function useMeQuery() {
+  const token = useAuthStore((s) => s.token);
+  return useQuery({ queryKey: ME_KEY, queryFn: meService, enabled: Boolean(token) });
+}
+
+/**
+ * Decide para onde a pessoa vai depois de entrar:
+ *  - sem viagens → onboarding
+ *  - viagem ativa sem destino/datas → onboarding daquela viagem
+ *  - caso contrário → painel
+ */
+export function rotaInicial(me: Me, viagemPreferida?: string | null): string {
+  if (me.viagens.length === 0) return '/onboarding';
+
+  const store = useAuthStore.getState();
+  const ativa =
+    me.viagens.find((v) => v.id === viagemPreferida) ??
+    me.viagens.find((v) => v.id === store.viagemAtivaId) ??
+    me.viagens.find((v) => v.configurada) ??
+    me.viagens[0];
+
+  store.setViagemAtiva(ativa.id);
+  return ativa.configurada ? '/dashboard' : `/onboarding?viagem=${ativa.id}`;
+}
+
+/** Depois de login/cadastro: salva a sessão, aceita o convite (se houver) e redireciona */
+function useAposAutenticar() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const qc = useQueryClient();
 
+  return async (resposta: AuthResponse, convite?: string | null) => {
+    iniciarSessao(resposta.access_token, resposta.usuario);
+
+    let viagemDoConvite: string | null = null;
+    if (convite) {
+      try {
+        viagemDoConvite = (await aceitarConviteService(convite)).viagemId;
+        toast.success('Você entrou na viagem!');
+      } catch (erro) {
+        toast.error(mensagemDeErro(erro, 'Não foi possível usar esse convite.'));
+      }
+    }
+
+    const me = await qc.fetchQuery({ queryKey: ME_KEY, queryFn: meService, staleTime: 0 });
+    router.replace(rotaInicial(me, viagemDoConvite));
+  };
+}
+
+export function useLoginMutation(convite?: string | null) {
+  const aposAutenticar = useAposAutenticar();
   return useMutation({
     mutationFn: (data: LoginDto) => loginService(data),
-    onSuccess: (data) => {
-      const { access_token, usuario } = data;
-
-      // 1. Salva no Zustand / localStorage
-      setAuth(
-        access_token,
-        { id: usuario.id, nome: usuario.nome, email: usuario.email },
-        { id: usuario.casal.id, nome: usuario.casal.nome }
-      );
-
-      // 2. Salva no Cookie (Para o Middleware do Next.js poder ler)
-      document.cookie = `bplanner-token=${access_token}; path=/; max-age=604800`; // Expira em 7 dias
-
-      toast.success(`Bem-vindo(a) de volta, ${usuario.nome}!`);
-      router.push('/dashboard');
+    onSuccess: async (resposta) => {
+      toast.success(`Que bom te ver, ${resposta.usuario.nome}!`);
+      await aposAutenticar(resposta, convite);
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
+    onError: (erro) => toast.error(mensagemDeErro(erro)),
   });
-};
+}
 
-// Hook de Registro
-export const useRegisterMutation = () => {
-  const router = useRouter();
-
+export function useRegisterMutation(convite?: string | null) {
+  const aposAutenticar = useAposAutenticar();
   return useMutation({
     mutationFn: (data: CreateUsuarioDto) => registerService(data),
-    onSuccess: () => {
-      toast.success('Conta criada. Agora é só entrar com seu email e senha.');
-      router.push('/login');
+    onSuccess: async (resposta) => {
+      toast.success('Conta criada!');
+      await aposAutenticar(resposta, convite);
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
+    onError: (erro) => toast.error(mensagemDeErro(erro)),
   });
-};
-
-// Hook de Pré-visualização do Convite
-export const useValidarConviteQuery = (codigo: string) => {
-  const codigoLimpo = codigo?.trim()?.toUpperCase() || '';
-
-  return useQuery({
-    queryKey: ['validar-convite', codigoLimpo],
-    queryFn: () => validarConviteService(codigoLimpo),
-    enabled: codigoLimpo.length === 6,
-    retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutos de cache
-  });
-};
+}

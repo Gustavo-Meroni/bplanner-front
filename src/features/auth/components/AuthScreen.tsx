@@ -1,7 +1,10 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Ticket } from 'lucide-react';
+import { BoardingPassCard } from '@/shared/components/brand/BoardingPass';
+import { useConvitePreviaQuery } from '@/features/convites/api/hooks';
 import { AuthVisualSide } from './AuthVisualSide';
 import { AuthSegmentedTabs, type AuthTab } from './AuthSegmentedTabs';
 import { LoginForm } from './LoginForm';
@@ -9,6 +12,8 @@ import { RegisterForm } from './RegisterForm';
 
 interface AuthScreenProps {
   initialTab?: AuthTab;
+  /** Código de convite vindo de /convite/[codigo] */
+  convite?: string | null;
 }
 
 const COPY: Record<AuthTab, { title: string; subtitle: string; href: string; docTitle: string }> = {
@@ -26,30 +31,8 @@ const COPY: Record<AuthTab, { title: string; subtitle: string; href: string; doc
   },
 };
 
-/** Recorte de "picote" entre o canhoto e o cartão de embarque. */
-function Perforation() {
-  const notch = 'absolute size-6 rounded-full border border-border bg-background';
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-      {/* horizontal (mobile) */}
-      <div className="lg:hidden">
-        <div className="absolute inset-x-6 top-0 border-t-2 border-dashed border-border" />
-        <div className={`${notch} -left-3 -top-3`} />
-        <div className={`${notch} -right-3 -top-3`} />
-      </div>
-      {/* vertical (desktop) */}
-      <div className="hidden lg:block">
-        <div className="absolute inset-y-6 left-0 border-l-2 border-dashed border-border" />
-        <div className={`${notch} -left-3 -top-3`} />
-        <div className={`${notch} -bottom-3 -left-3`} />
-      </div>
-    </div>
-  );
-}
-
-export const AuthScreen = ({ initialTab = 'login' }: AuthScreenProps) => {
+export const AuthScreen = ({ initialTab = 'login', convite }: AuthScreenProps) => {
   const pathname = usePathname();
-  const reduce = useReducedMotion() ?? false;
 
   // A aba vem da URL, então /login e /registrar continuam linkáveis
   const activeTab: AuthTab = pathname?.startsWith('/registrar')
@@ -60,49 +43,52 @@ export const AuthScreen = ({ initialTab = 'login' }: AuthScreenProps) => {
 
   const handleTabChange = (tab: AuthTab) => {
     if (tab === activeTab) return;
-    window.history.replaceState(null, '', COPY[tab].href);
+    const query = convite ? `?convite=${encodeURIComponent(convite)}` : '';
+    window.history.replaceState(null, '', COPY[tab].href + query);
     document.title = COPY[tab].docTitle;
   };
 
   const copy = COPY[activeTab];
 
   return (
-    <main className="flex min-h-dvh items-center justify-center overflow-hidden p-3 sm:p-4">
-      <motion.div
-        initial={reduce ? false : { opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex w-full max-w-[880px] flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_40px_80px_-40px_hsl(var(--foreground)/0.35)] lg:min-h-[540px] lg:flex-row"
-      >
-        <AuthVisualSide />
+    <BoardingPassCard stub={<AuthVisualSide />}>
+      {convite && <AvisoConvite codigo={convite} />}
 
-        <section className="relative flex flex-1 flex-col px-6 py-8 sm:px-10 lg:py-6">
-          <Perforation />
+      <AuthSegmentedTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-          <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
-            <AuthSegmentedTabs activeTab={activeTab} onTabChange={handleTabChange} />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          <header className="mb-4">
+            <h1 className="font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]">{copy.title}</h1>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{copy.subtitle}</p>
+          </header>
 
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-              >
-                <header className="mb-4">
-                  <h1 className="font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]">
-                    {copy.title}
-                  </h1>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{copy.subtitle}</p>
-                </header>
-
-                {activeTab === 'login' ? <LoginForm /> : <RegisterForm />}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </section>
-      </motion.div>
-    </main>
+          {activeTab === 'login' ? <LoginForm convite={convite} /> : <RegisterForm convite={convite} />}
+        </motion.div>
+      </AnimatePresence>
+    </BoardingPassCard>
   );
 };
+
+/** Lembrete de que, ao entrar, a pessoa já cai na viagem do convite */
+function AvisoConvite({ codigo }: { codigo: string }) {
+  const { data } = useConvitePreviaQuery(codigo);
+  if (!data) return null;
+
+  const destino = data.viagem.destinoNome ?? data.viagem.nome;
+  return (
+    <div className="mb-5 flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.07] px-3.5 py-2.5 animate-in fade-in slide-in-from-top-1 duration-300">
+      <Ticket size={18} className="shrink-0 text-primary" />
+      <p className="text-[13px] leading-snug text-foreground">
+        {data.convidadoPor ? `${data.convidadoPor} te convidou para` : 'Convite para'}{' '}
+        <strong className="font-semibold">{destino}</strong>. Entre ou crie sua conta para participar.
+      </p>
+    </div>
+  );
+}

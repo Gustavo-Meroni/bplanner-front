@@ -1,3 +1,6 @@
+import type { AuthUser } from '@/shared/store/use-auth-store';
+import type { ViagemResumo } from '@/features/viagens/api/types';
+
 export interface LoginDto {
   email: string;
   senha: string;
@@ -7,29 +10,14 @@ export interface CreateUsuarioDto {
   nome: string;
   email: string;
   senha: string;
-  codigoConvite?: string;
-  nomeCasal?: string;
-}
-
-export interface CasalInfo {
-  id: string;
-  nome: string;
-  codigoConvite: string;
-}
-
-export interface UsuarioInfo {
-  id: string;
-  nome: string;
-  email: string;
-  casal: CasalInfo;
 }
 
 export interface AuthResponse {
   access_token: string;
-  usuario: UsuarioInfo;
+  usuario: AuthUser;
 }
 
-export interface ValidarConviteResponse {
-  id: string;
-  nome: string;
+/** GET /auth/me */
+export interface Me extends AuthUser {
+  viagens: ViagemResumo[];
 }
