@@ -92,7 +92,7 @@ function Canhoto({ convite }: { convite?: ConvitePrevia }) {
 
       <div className="relative mt-2 h-[170px] sm:h-[210px] lg:mt-0 lg:h-auto lg:min-h-[230px] lg:flex-1">
         <WorldMap
-          className="absolute inset-0 h-full w-full"
+          className="map-fade-top absolute inset-0 h-full w-full"
           viewBox={destino ? viewBoxAround(destino) : [0, 0, MAP_WIDTH, MAP_HEIGHT]}
           parallax
           pins={destino ? [{ id: 'destino', at: destino, kind: 'destination' }] : []}

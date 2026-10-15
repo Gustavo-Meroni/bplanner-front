@@ -159,6 +159,13 @@
   }
 }
 
+/* Mapa: os pontos surgem aos poucos no topo, sem corte seco sob o texto */
+.map-fade,
+.map-fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 24%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 24%);
+}
+
 /* Esconde a scrollbar mantendo o scroll */
 .hide-scrollbar {
   scrollbar-width: none;
