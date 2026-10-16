@@ -6,7 +6,8 @@ import { Plane } from 'lucide-react';
 import { Wordmark } from '@/shared/components/brand/SunMark';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { WorldMap, type LatLng } from '@/shared/components/map/WorldMap';
-import { SplitFlap } from '@/shared/components/brand/SplitFlap';
+import { SplitFlap, tamanhoDoLugar } from '@/shared/components/brand/SplitFlap';
+import { cn } from '@/lib/utils';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const CYCLE_MS = 4200;
@@ -90,16 +91,16 @@ export function AuthVisualSide() {
 
         {/* Rota do voo */}
         <div className="mt-7 sm:mt-10">
-          <div className="flex items-end gap-5">
+          <div className="flex items-end gap-3 sm:gap-5">
             <div className="min-w-0 flex-1">
               <SplitFlap
                 text={de.cidade.toUpperCase()}
-                className="font-display text-xl leading-tight text-foreground sm:text-2xl"
+                className={cn('font-display leading-tight text-foreground', tamanhoDoLugar(de.cidade, 'login'))}
               />
               <CidadeTroca nome={de.uf} />
             </div>
 
-            <div className="relative mb-8 flex-[0.6] sm:mb-9" aria-hidden="true">
+            <div className="relative mb-7 w-8 shrink-0 sm:mb-8 sm:w-14" aria-hidden="true">
               <div className="h-0 border-t-2 border-dashed border-foreground/25" />
               <motion.div
                 key={`linha-${index}`}
@@ -122,7 +123,7 @@ export function AuthVisualSide() {
             <div className="min-w-0 flex-1 text-right">
               <SplitFlap
                 text={para.cidade.toUpperCase()}
-                className="justify-end font-display text-xl leading-tight text-foreground sm:text-2xl"
+                className={cn('font-display leading-tight text-foreground', tamanhoDoLugar(para.cidade, 'login'))}
                 delay={0.1}
               />
               <CidadeTroca nome={para.uf} alinhar="direita" />

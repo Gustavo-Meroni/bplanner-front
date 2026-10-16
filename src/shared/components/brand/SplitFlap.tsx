@@ -6,30 +6,65 @@ import { cn } from '@/lib/utils';
 /**
  * Texto no estilo painel de partidas (split-flap): cada letra que muda
  * "vira" como uma plaquinha, em sequência. Letras iguais não viram.
+ *
+ * As letras são agrupadas por palavra: assim "BUENOS AIRES" quebra só no
+ * espaço, nunca no meio da palavra, e o alinhamento vem do text-align do
+ * elemento pai (não de flex), para a quebra de linha funcionar.
  */
 export function SplitFlap({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
   const reduce = useReducedMotion() ?? false;
+  const palavras = text.split(' ');
+  let posicao = 0;
 
   return (
-    <span className={cn('inline-flex', className)} style={{ perspective: 600 }} aria-label={text} role="text">
-      {text.split('').map((letra, i) => (
-        <span key={i} aria-hidden="true" className="relative inline-block">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
-              key={letra}
-              className="inline-block [backface-visibility:hidden]"
-              style={{ transformOrigin: '50% 50%' }}
-              initial={reduce ? false : { rotateX: -90, opacity: 0 }}
-              animate={{ rotateX: 0, opacity: 1 }}
-              exit={reduce ? { opacity: 0 } : { rotateX: 90, opacity: 0 }}
-              transition={{ duration: 0.28, delay: delay + i * 0.08, ease: [0.3, 0.7, 0.4, 1] }}
-            >
-              {/* espaço vira NBSP: span inline-block come o espaço normal */}
-              {letra === ' ' ? '\u00A0' : letra}
-            </motion.span>
-          </AnimatePresence>
-        </span>
-      ))}
+    <span className={cn('inline', className)} style={{ perspective: 600 }} aria-label={text} role="text">
+      {palavras.map((palavra, p) => {
+        const letras = palavra.split('').map((letra) => ({ letra, i: posicao++ }));
+        posicao++; // o espaço também conta no ritmo da animação
+        return (
+          <span key={p}>
+            {p > 0 && ' '}
+            <span className="inline-flex whitespace-nowrap align-baseline">
+              {letras.map(({ letra, i }) => (
+                <span key={i} aria-hidden="true" className="relative inline-block">
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.span
+                      key={letra}
+                      className="inline-block [backface-visibility:hidden]"
+                      style={{ transformOrigin: '50% 50%' }}
+                      initial={reduce ? false : { rotateX: -90, opacity: 0 }}
+                      animate={{ rotateX: 0, opacity: 1 }}
+                      exit={reduce ? { opacity: 0 } : { rotateX: 90, opacity: 0 }}
+                      transition={{ duration: 0.28, delay: delay + i * 0.08, ease: [0.3, 0.7, 0.4, 1] }}
+                    >
+                      {letra}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+              ))}
+            </span>
+          </span>
+        );
+      })}
     </span>
   );
+}
+
+/**
+ * Nome de cidade cabe em qualquer largura: quanto mais longo, menor a fonte.
+ * "Rio" fica grande, "Florianópolis" diminui, e nada estoura o cartão.
+ *
+ * `escala` 'cartao' é o cabeçalho do onboarding; 'login' é o painel da
+ * tela de entrada, um degrau menor.
+ */
+export function tamanhoDoLugar(nome: string, escala: 'cartao' | 'login' = 'cartao'): string {
+  const maiorPalavra = Math.max(...nome.split(' ').map((p) => p.length), 0);
+  const degrau = nome.length > 18 || maiorPalavra > 12 ? 2 : nome.length > 11 ? 1 : 0;
+
+  const tamanhos =
+    escala === 'cartao'
+      ? ['text-2xl sm:text-[1.75rem]', 'text-xl sm:text-2xl', 'text-base sm:text-lg']
+      : ['text-xl sm:text-2xl', 'text-lg sm:text-xl', 'text-sm sm:text-base'];
+
+  return tamanhos[degrau];
 }

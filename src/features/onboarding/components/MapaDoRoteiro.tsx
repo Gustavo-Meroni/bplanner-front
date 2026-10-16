@@ -1,7 +1,7 @@
 'use client';
 
 import { Wordmark } from '@/shared/components/brand/SunMark';
-import { SplitFlap } from '@/shared/components/brand/SplitFlap';
+import { SplitFlap, tamanhoDoLugar } from '@/shared/components/brand/SplitFlap';
 import { Bus, Car, MapPinned, Plane } from 'lucide-react';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { WorldMap, viewBoxForPoints, type MapPin, type MapRoute } from '@/shared/components/map/WorldMap';
@@ -9,6 +9,7 @@ import { Fontes } from '@/shared/components/ui/Fontes';
 import { dataCurta, duracao } from '@/shared/utils/datas';
 import type { TipoTransporte } from '@/features/viagens/api/types';
 import type { Rascunho } from '../hooks/use-rascunho';
+import { cn } from '@/lib/utils';
 import { Bandeira } from './Bandeira';
 
 /** Canhoto do onboarding: o cartão de embarque se monta conforme a pessoa preenche */
@@ -53,18 +54,18 @@ export function MapaDoRoteiro({ rascunho }: { rascunho: Rascunho }) {
         </div>
 
         <div className="mt-7 sm:mt-9">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-end justify-between gap-3 sm:gap-4">
             <div className="min-w-0 flex-1">
               <SplitFlap
                 text={(origem?.nome ?? 'Origem').toUpperCase()}
-                className="font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]"
+                className={cn('font-display leading-tight text-foreground', tamanhoDoLugar(origem?.nome ?? 'Origem'))}
               />
               <p className="mt-1 truncate text-[13px] font-medium text-foreground/60">
                 {origem ? origem.contexto ?? 'Saída' : 'De onde você sai'}
               </p>
             </div>
 
-            <div className="relative mb-7 w-10 shrink-0" aria-hidden="true">
+            <div className="relative mb-7 w-8 shrink-0 sm:w-10" aria-hidden="true">
               <div className="h-0 border-t-2 border-dashed border-foreground/25" />
               {IconeTransporte && (
                 <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card p-1 text-primary shadow-sm">
@@ -77,7 +78,7 @@ export function MapaDoRoteiro({ rascunho }: { rascunho: Rascunho }) {
               <SplitFlap
                 text={(ultima?.nome ?? 'Destino').toUpperCase()}
                 delay={0.1}
-                className="justify-end font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]"
+                className={cn('font-display leading-tight text-foreground', tamanhoDoLugar(ultima?.nome ?? 'Destino'))}
               />
               <p className="mt-1 truncate text-[13px] font-medium text-foreground/60">
                 {ultima
