@@ -108,11 +108,6 @@ export function CidadeBusca({ label, placeholder, onEscolher, excluir = [], auto
                       {c.contexto ?? [c.regiao, c.pais].filter(Boolean).join(', ')}
                     </span>
                   </span>
-                  {c.aeroporto && (
-                    <span className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-muted-foreground">
-                      {c.aeroporto}
-                    </span>
-                  )}
                 </button>
               </li>
             ))

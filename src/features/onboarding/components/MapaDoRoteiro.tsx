@@ -2,16 +2,19 @@
 
 import { Wordmark } from '@/shared/components/brand/SunMark';
 import { SplitFlap } from '@/shared/components/brand/SplitFlap';
+import { Bus, Car, MapPinned, Plane } from 'lucide-react';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { WorldMap, viewBoxForPoints, type MapPin, type MapRoute } from '@/shared/components/map/WorldMap';
 import { Fontes } from '@/shared/components/ui/Fontes';
 import { dataCurta, duracao } from '@/shared/utils/datas';
+import type { TipoTransporte } from '@/features/viagens/api/types';
 import type { Rascunho } from '../hooks/use-rascunho';
 import { Bandeira } from './Bandeira';
 
 /** Canhoto do onboarding: o cartão de embarque se monta conforme a pessoa preenche */
 export function MapaDoRoteiro({ rascunho }: { rascunho: Rascunho }) {
-  const { paradas, origem, dataIda, dataVolta } = rascunho;
+  const { paradas, origem, dataIda, dataVolta, transporte } = rascunho;
+  const IconeTransporte = transporte ? ICONES[transporte] : null;
   const ultima = paradas[paradas.length - 1];
 
   const pontos = [...(origem ? [origem] : []), ...paradas];
@@ -51,23 +54,37 @@ export function MapaDoRoteiro({ rascunho }: { rascunho: Rascunho }) {
 
         <div className="mt-7 sm:mt-9">
           <div className="flex items-end justify-between gap-4">
-            <div className="min-w-[6rem]">
+            <div className="min-w-0 flex-1">
               <SplitFlap
-                text={origem?.aeroporto ?? '···'}
-                className="font-display text-4xl leading-none text-foreground sm:text-5xl"
+                text={(origem?.nome ?? 'Origem').toUpperCase()}
+                className="font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]"
               />
-              <p className="mt-1.5 truncate text-[13px] font-medium text-foreground/70">{origem?.nome ?? 'Origem'}</p>
+              <p className="mt-1 truncate text-[13px] font-medium text-foreground/60">
+                {origem ? origem.contexto ?? 'Saída' : 'De onde você sai'}
+              </p>
             </div>
-            <div className="mb-8 h-0 flex-1 border-t-2 border-dashed border-foreground/25" aria-hidden="true" />
-            <div className="min-w-[6rem] text-right">
+
+            <div className="relative mb-7 w-10 shrink-0" aria-hidden="true">
+              <div className="h-0 border-t-2 border-dashed border-foreground/25" />
+              {IconeTransporte && (
+                <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card p-1 text-primary shadow-sm">
+                  <IconeTransporte size={13} />
+                </span>
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1 text-right">
               <SplitFlap
-                text={ultima?.aeroporto ?? '···'}
+                text={(ultima?.nome ?? 'Destino').toUpperCase()}
                 delay={0.1}
-                className="font-display text-4xl leading-none text-foreground sm:text-5xl"
+                className="justify-end font-display text-2xl leading-tight text-foreground sm:text-[1.75rem]"
               />
-              <p className="mt-1.5 truncate text-[13px] font-medium text-foreground/70">
-                {ultima ? ultima.nome : 'Destino'}
-                {paradas.length > 1 && ` · ${paradas.length} cidades`}
+              <p className="mt-1 truncate text-[13px] font-medium text-foreground/60">
+                {ultima
+                  ? paradas.length > 1
+                    ? `${paradas.length} cidades`
+                    : ultima.contexto ?? 'Destino'
+                  : 'Para onde você vai'}
               </p>
             </div>
           </div>
@@ -105,3 +122,5 @@ export function MapaDoRoteiro({ rascunho }: { rascunho: Rascunho }) {
     </div>
   );
 }
+
+const ICONES: Record<TipoTransporte, typeof Plane> = { AVIAO: Plane, CARRO: Car, ONIBUS: Bus, OUTRO: MapPinned };

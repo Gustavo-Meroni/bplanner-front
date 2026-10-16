@@ -24,7 +24,8 @@ export function SplitFlap({ text, className, delay = 0 }: { text: string; classN
               exit={reduce ? { opacity: 0 } : { rotateX: 90, opacity: 0 }}
               transition={{ duration: 0.28, delay: delay + i * 0.08, ease: [0.3, 0.7, 0.4, 1] }}
             >
-              {letra}
+              {/* espaço vira NBSP: span inline-block come o espaço normal */}
+              {letra === ' ' ? '\u00A0' : letra}
             </motion.span>
           </AnimatePresence>
         </span>

@@ -1,15 +1,22 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { PlaneTakeoff, X } from 'lucide-react';
-import type { Cidade } from '@/features/viagens/api/types';
+import { Bus, Car, MapPin, Plane, X } from 'lucide-react';
+import type { Cidade, TipoTransporte } from '@/features/viagens/api/types';
 import type { Rascunho } from '../../hooks/use-rascunho';
 import { Bandeira } from '../Bandeira';
+import { cn } from '@/lib/utils';
 import { CidadeBusca } from '../CidadeBusca';
-import { AeroportoSelect } from '../AeroportoSelect';
 import { TituloEtapa } from './comum';
 
 const MAX_PARADAS = 5;
+
+const TRANSPORTES: Array<{ valor: TipoTransporte; rotulo: string; Icone: typeof Plane }> = [
+  { valor: 'AVIAO', rotulo: 'Avião', Icone: Plane },
+  { valor: 'CARRO', rotulo: 'Carro', Icone: Car },
+  { valor: 'ONIBUS', rotulo: 'Ônibus', Icone: Bus },
+  { valor: 'OUTRO', rotulo: 'Outro', Icone: MapPin },
+];
 
 export function EtapaDestinos({
   rascunho,
@@ -50,15 +57,6 @@ export function EtapaDestinos({
                     {p.contexto ?? [p.regiao, p.pais].filter(Boolean).join(', ')}
                   </span>
                 </span>
-                <AeroportoSelect
-                  lat={p.lat}
-                  lng={p.lng}
-                  valor={p.aeroporto}
-                  descricao={`Aeroporto de ${p.nome}`}
-                  onEscolher={(iata) =>
-                    atualizar({ paradas: paradas.map((item, j) => (j === i ? { ...item, aeroporto: iata } : item)) })
-                  }
-                />
                 <button
                   type="button"
                   onClick={() => atualizar({ paradas: paradas.filter((_, j) => j !== i) })}
@@ -87,11 +85,7 @@ export function EtapaDestinos({
 
       <div className="mt-6 border-t border-dashed border-border pt-5">
         {origem ? (
-          <OrigemEscolhida
-            origem={origem}
-            onRemover={() => atualizar({ origem: null })}
-            onTrocarAeroporto={(iata) => atualizar({ origem: { ...origem, aeroporto: iata } })}
-          />
+          <OrigemEscolhida origem={origem} onRemover={() => atualizar({ origem: null })} />
         ) : (
           <CidadeBusca
             label="De onde você sai? (opcional)"
@@ -102,33 +96,45 @@ export function EtapaDestinos({
         {!origem && (
           <p className="mt-1.5 text-xs text-muted-foreground">Com a origem, o mapa desenha a rota completa.</p>
         )}
+
+        <div className="mt-5">
+          <p className="mb-2 text-[13px] font-semibold text-foreground">Como vocês vão? (opcional)</p>
+          <div className="flex flex-wrap gap-2">
+            {TRANSPORTES.map(({ valor, rotulo, Icone }) => {
+              const marcado = rascunho.transporte === valor;
+              return (
+                <button
+                  key={valor}
+                  type="button"
+                  onClick={() => atualizar({ transporte: marcado ? null : valor })}
+                  aria-pressed={marcado}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-colors',
+                    marcado
+                      ? 'border-primary bg-primary/10 font-semibold text-primary'
+                      : 'border-border text-foreground hover:border-foreground/30 hover:bg-muted'
+                  )}
+                >
+                  <Icone size={14} />
+                  {rotulo}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 text-xs text-muted-foreground">Isso ajuda a sugerir os gastos no próximo passo.</p>
+        </div>
       </div>
     </div>
   );
 }
 
-function OrigemEscolhida({
-  origem,
-  onRemover,
-  onTrocarAeroporto,
-}: {
-  origem: Cidade;
-  onRemover: () => void;
-  onTrocarAeroporto: (iata: string | null) => void;
-}) {
+function OrigemEscolhida({ origem, onRemover }: { origem: Cidade; onRemover: () => void }) {
   return (
     <div>
       <p className="mb-1 text-[13px] font-semibold text-foreground">Saindo de</p>
       <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
-        <PlaneTakeoff size={18} className="shrink-0 text-muted-foreground" />
+        <MapPin size={18} className="shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{origem.nome}</span>
-        <AeroportoSelect
-          lat={origem.lat}
-          lng={origem.lng}
-          valor={origem.aeroporto}
-          descricao={`Aeroporto de ${origem.nome}`}
-          onEscolher={onTrocarAeroporto}
-        />
         <button
           type="button"
           onClick={onRemover}

@@ -14,24 +14,24 @@ import { useAuthStore } from '@/shared/store/use-auth-store';
 import { ME_KEY, useMeQuery } from '@/features/auth/api/hooks';
 import { atualizarViagemService, criarViagemService } from '@/features/viagens/api/services';
 import type { SalvarViagemDto, ViagemResumo } from '@/features/viagens/api/types';
-import { metaFinal, totaisDoRascunho, useRascunho, type Rascunho } from '../hooks/use-rascunho';
+import { useRascunho, type Rascunho } from '../hooks/use-rascunho';
 import { MapaDoRoteiro } from './MapaDoRoteiro';
 import { EtapaEntrada } from './etapas/EtapaEntrada';
 import { EtapaDestinos } from './etapas/EtapaDestinos';
 import { EtapaDatas } from './etapas/EtapaDatas';
 import { EtapaPessoas } from './etapas/EtapaPessoas';
-import { EtapaMeta } from './etapas/EtapaMeta';
+import { EtapaGastos } from './etapas/EtapaGastos';
 import { EtapaRevisao } from './etapas/EtapaRevisao';
 import { EtapaConvidar } from './etapas/EtapaConvidar';
 
-type Etapa = 'entrada' | 'destinos' | 'datas' | 'pessoas' | 'meta' | 'revisao';
-const PASSOS: Etapa[] = ['destinos', 'datas', 'pessoas', 'meta', 'revisao'];
+type Etapa = 'entrada' | 'destinos' | 'datas' | 'pessoas' | 'gastos' | 'revisao';
+const PASSOS: Etapa[] = ['destinos', 'datas', 'pessoas', 'gastos', 'revisao'];
 const TITULOS: Record<Etapa, string> = {
   entrada: 'Começo',
   destinos: 'Destino',
   datas: 'Datas',
   pessoas: 'Quem vai',
-  meta: 'Meta',
+  gastos: 'Gastos',
   revisao: 'Revisão',
 };
 
@@ -43,8 +43,9 @@ function etapaValida(etapa: Etapa, r: Rascunho) {
       return /^\d{4}-\d{2}-\d{2}$/.test(r.dataIda) && r.dataIda >= '2000-01-01' && r.dataVolta >= r.dataIda;
     case 'pessoas':
       return r.pessoas >= 1;
-    case 'meta':
-      return metaFinal(r) > 0;
+    case 'gastos':
+      // Marcar gastos é opcional: dá para montar a lista depois, no painel
+      return true;
     default:
       return true;
   }
@@ -53,24 +54,18 @@ function etapaValida(etapa: Etapa, r: Rascunho) {
 function paraDto(r: Rascunho): SalvarViagemDto {
   const semNulos = <T extends object>(o: T) =>
     Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined)) as T;
-  const { itens } = totaisDoRascunho(r);
 
   return {
     paradas: r.paradas.map(({ contexto: _contexto, tipo: _tipo, ...p }) => semNulos(p)) as SalvarViagemDto['paradas'],
-    ...(r.origem && { origem: semNulos({ nome: r.origem.nome, lat: r.origem.lat, lng: r.origem.lng, aeroporto: r.origem.aeroporto }) as SalvarViagemDto['origem'] }),
+    ...(r.origem && { origem: { nome: r.origem.nome, lat: r.origem.lat, lng: r.origem.lng } }),
+    ...(r.transporte && { transporte: r.transporte }),
     dataIda: r.dataIda,
     dataVolta: r.dataVolta,
-    metaCentavos: metaFinal(r),
     pessoas: r.pessoas,
-    // Só os itens preenchidos viram custos de verdade
-    custos: itens.map((i) => ({
-      nome: i.nome.trim() || 'Item da viagem',
-      categoria: i.categoria,
-      valorUnitarioCentavos: i.valorUnitarioCentavos,
-      base: i.base,
-      situacao: i.situacao,
-      ...(i.situacao === 'PARCELADO' && { parcelas: i.parcelas, parcelasPagas: i.parcelasPagas }),
-    })),
+    metaCentavos: r.estimativaTotalCentavos,
+    ...(r.jaGuardadoCentavos > 0 && { aporteInicialCentavos: r.jaGuardadoCentavos }),
+    // Os gastos escolhidos viram custos previstos, ainda sem valor
+    custos: r.gastos.map((g) => ({ nome: g.nome, categoria: g.categoria, base: g.base })),
     estimativa: { companhia: r.companhia, pessoas: r.pessoas },
   };
 }
@@ -79,7 +74,8 @@ function paraDto(r: Rascunho): SalvarViagemDto {
 function rascunhoDaViagem(v?: ViagemResumo): Partial<Rascunho> | undefined {
   if (!v) return undefined;
   return {
-    ...(v.metaCentavos > 0 && { metaCentavos: v.metaCentavos, metaEditada: true }),
+    ...(v.metaCentavos > 0 && { estimativaTotalCentavos: v.metaCentavos }),
+    ...(v.transporte && { transporte: v.transporte }),
     ...(v.dataIda && { dataIda: v.dataIda }),
     ...(v.dataVolta && { dataVolta: v.dataVolta }),
   };
@@ -100,7 +96,7 @@ export function OnboardingScreen({ viagemId }: { viagemId: string | null }) {
   // Os dados da viagem existente chegam depois do primeiro render: pré-preenche a meta e as datas uma vez
   useEffect(() => {
     if (!carregado || !viagemExistente) return;
-    if (rascunho.metaCentavos === 0 && !rascunho.dataIda) atualizar(rascunhoDaViagem(viagemExistente) ?? {});
+    if (rascunho.estimativaTotalCentavos === 0 && !rascunho.dataIda) atualizar(rascunhoDaViagem(viagemExistente) ?? {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carregado, viagemExistente?.id]);
 
@@ -159,10 +155,10 @@ export function OnboardingScreen({ viagemId }: { viagemId: string | null }) {
     <EtapaDatas rascunho={rascunho} atualizar={atualizar} />
   ) : etapa === 'pessoas' ? (
     <EtapaPessoas rascunho={rascunho} atualizar={atualizar} />
-  ) : etapa === 'meta' ? (
-    <EtapaMeta rascunho={rascunho} atualizar={atualizar} />
+  ) : etapa === 'gastos' ? (
+    <EtapaGastos rascunho={rascunho} atualizar={atualizar} />
   ) : (
-    <EtapaRevisao rascunho={rascunho} />
+    <EtapaRevisao rascunho={rascunho} atualizar={atualizar} />
   );
 
   const mostrarRodape = !criada && !(etapa === 'entrada' && modoEntrada === 'convite');
