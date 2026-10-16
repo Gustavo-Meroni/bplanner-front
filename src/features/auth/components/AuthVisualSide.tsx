@@ -1,15 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Plane } from 'lucide-react';
+import { useReducedMotion } from 'motion/react';
 import { Wordmark } from '@/shared/components/brand/SunMark';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { WorldMap, type LatLng } from '@/shared/components/map/WorldMap';
-import { SplitFlap, tamanhoDoLugar } from '@/shared/components/brand/SplitFlap';
-import { cn } from '@/lib/utils';
+import { TrilhoDaRota } from '@/shared/components/brand/TrilhoDaRota';
 
-const EASE = [0.22, 1, 0.36, 1] as const;
 const CYCLE_MS = 4200;
 
 interface Lugar {
@@ -89,47 +86,16 @@ export function AuthVisualSide() {
           <ThemeToggle />
         </div>
 
-        {/* Rota do voo */}
-        <div className="mt-7 sm:mt-10">
-          <div className="flex items-end gap-3 sm:gap-5">
-            <div className="min-w-0 flex-1">
-              <SplitFlap
-                text={de.cidade.toUpperCase()}
-                className={cn('font-display leading-tight text-foreground', tamanhoDoLugar(de.cidade, 'login'))}
-              />
-              <CidadeTroca nome={de.uf} />
-            </div>
-
-            <div className="relative mb-7 w-8 shrink-0 sm:mb-8 sm:w-14" aria-hidden="true">
-              <div className="h-0 border-t-2 border-dashed border-foreground/25" />
-              <motion.div
-                key={`linha-${index}`}
-                className="absolute inset-x-0 -top-px h-[2px] origin-left rounded-full bg-primary"
-                initial={reduce ? false : { scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 1.2, delay: 0.45, ease: EASE }}
-              />
-              <motion.span
-                key={`aviao-${index}`}
-                className="absolute top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card p-1.5 text-primary shadow-sm"
-                initial={reduce ? false : { left: '0%' }}
-                animate={{ left: '100%' }}
-                transition={{ duration: 1.2, delay: 0.45, ease: EASE }}
-              >
-                <Plane size={16} className="rotate-45" strokeWidth={2.25} />
-              </motion.span>
-            </div>
-
-            <div className="min-w-0 flex-1 text-right">
-              <SplitFlap
-                text={para.cidade.toUpperCase()}
-                className={cn('font-display leading-tight text-foreground', tamanhoDoLugar(para.cidade, 'login'))}
-                delay={0.1}
-              />
-              <CidadeTroca nome={para.uf} alinhar="direita" />
-            </div>
-          </div>
-        </div>
+        {/* Rota do voo: empilhada, para caber nome de cidade de qualquer tamanho */}
+        <TrilhoDaRota
+          className="mt-7 sm:mt-9"
+          transporte="AVIAO"
+          animarEm={index}
+          pontos={[
+            { id: `de-${index}`, nome: de.cidade, detalhe: de.uf },
+            { id: `para-${index}`, nome: para.cidade, detalhe: para.uf },
+          ]}
+        />
       </div>
 
       <div className="relative mt-2 h-[170px] sm:h-[230px] lg:mt-4 lg:h-auto lg:min-h-[220px] lg:flex-1">
@@ -156,25 +122,5 @@ export function AuthVisualSide() {
         Planeje sozinho ou com quem vai junto: destino, meta, aportes e parcelas até o embarque.
       </p>
     </div>
-  );
-}
-
-/** Nome da cidade trocando junto com o código */
-function CidadeTroca({ nome, alinhar = 'esquerda' }: { nome: string; alinhar?: 'esquerda' | 'direita' }) {
-  return (
-    <span className={`relative mt-1.5 block h-5 ${alinhar === 'direita' ? 'text-right' : ''}`}>
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={nome}
-          className="block whitespace-nowrap text-[13px] font-medium text-foreground/70"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
-          {nome}
-        </motion.span>
-      </AnimatePresence>
-    </span>
   );
 }

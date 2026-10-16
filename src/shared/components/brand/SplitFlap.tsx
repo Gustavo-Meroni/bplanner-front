@@ -49,22 +49,3 @@ export function SplitFlap({ text, className, delay = 0 }: { text: string; classN
     </span>
   );
 }
-
-/**
- * Nome de cidade cabe em qualquer largura: quanto mais longo, menor a fonte.
- * "Rio" fica grande, "Florianópolis" diminui, e nada estoura o cartão.
- *
- * `escala` 'cartao' é o cabeçalho do onboarding; 'login' é o painel da
- * tela de entrada, um degrau menor.
- */
-export function tamanhoDoLugar(nome: string, escala: 'cartao' | 'login' = 'cartao'): string {
-  const maiorPalavra = Math.max(...nome.split(' ').map((p) => p.length), 0);
-  const degrau = nome.length > 18 || maiorPalavra > 12 ? 2 : nome.length > 11 ? 1 : 0;
-
-  const tamanhos =
-    escala === 'cartao'
-      ? ['text-2xl sm:text-[1.75rem]', 'text-xl sm:text-2xl', 'text-base sm:text-lg']
-      : ['text-xl sm:text-2xl', 'text-lg sm:text-xl', 'text-sm sm:text-base'];
-
-  return tamanhos[degrau];
-}
